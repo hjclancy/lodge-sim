@@ -1,0 +1,58 @@
+
+==============================================================
+SKELETON RUN — 5000 games | swap_prob=0.0 | coord=1.0
+==============================================================
+
+INVARIANT VIOLATIONS
+  none — all invariants held
+
+OUTCOMES
+  TRAITORS              4079   81.6%
+  FAITHFUL               921   18.4%
+
+ENDING SIZE (players alive at END)
+  Final 2               1384   27.7%
+  Final 3               2827   56.5%
+  Final 4                486    9.7%
+  Final 5                155    3.1%
+  Final 6                 89    1.8%
+  Final 7                 20    0.4%
+  Final 8                 35    0.7%
+  Final 9                  4    0.1%
+
+FLOAT EVENTS
+  ANCHOR_BREAK                          982   19.6%
+  SUCCESSION_ACCEPT                     655   13.1%
+  ZERO_VOTE_COUNCIL                      79    1.6%
+
+MECHANIC FIRING RATES
+  rope raised                          4996   99.9%
+  anchor blocked a murder               982   19.6%
+  anchor meaning leaked to a Traitor   3535   70.7%   (mean council 2.04)
+  succession triggered                 1416   28.3%
+  succession accepted                   655   13.1%
+  plate swapped                           0    0.0%
+  plate swap killed a Traitor             0    0.0%
+
+REF_ADJUDICATION FREQUENCY  (the bug list)
+  TRANSMISSION_CONSENSUS_FORCED              4891    0.98/game
+  THREE_WAY_TIE                              4249    0.85/game
+  ANCHOR_HOLDER_BANISHED                     1911    0.38/game
+  FINALE_OVERSIZED                            686    0.14/game
+  ZERO_TRAITORS_FAITHFUL_WIN                  639    0.13/game
+  ROPE_TRAITOR_BLOC_OVERRIDE                  426    0.09/game
+
+ILLEGAL_ACTION FREQUENCY  (the ambiguity list)
+  BLOC_VOTE_NON_UNANIMOUS                    3781    0.76/game
+
+ELIMINATION TIMING
+  NIGHT_1           4570
+  RT_1              5000
+  RT_2              5000
+  RT_3              4926
+  SAT_DINNER        4252
+  RT_4              4956
+  RT_5              4891
+  NIGHT_3           5139
+  RT_6_FINALE       6308
+
