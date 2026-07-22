@@ -1,5 +1,3 @@
-[PLACEHOLDER — replace with the verbatim player-facing Rules Sheet]
-
 Twelve players. Three of you are hidden; the rest are not. Nobody but the hidden
 players knows who they are.
 

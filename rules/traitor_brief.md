@@ -1,5 +1,3 @@
-[PLACEHOLDER — replace with the verbatim player-facing Traitor Brief]
-
 Everything in the general rules applies to you. In addition:
 
 You are one of three hidden players. You know each other. Nobody else knows any of
