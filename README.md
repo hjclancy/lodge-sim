@@ -28,12 +28,29 @@ report itself.
 
 Requires `ANTHROPIC_API_KEY`. `--budget` halts the run at a USD ceiling.
 
-### BEFORE ANY REAL RUN: replace rules/
-`rules/public_rules.md` and `rules/traitor_brief.md` are what agents read. They
-currently contain PLACEHOLDER text derived from the canon. Replace them with the
-**verbatim player-facing documents** — the actual Rules Sheet and Traitor Brief
-the twelve guests receive. Testing the canon against a restatement of the canon
-finds nothing; the gap between intent and text is the whole point.
+### rules/
+`rules/public_rules.md` and `rules/traitor_brief.md` are what agents read. As of
+2026-07-22 the placeholder headers are gone (deliberate call: run the batch on
+clean canon-derived text) but the body is still **canon-derived, not the
+verbatim player-facing documents** the twelve guests receive — see
+`rules/README.md`. Testing the canon against a restatement of the canon finds
+canon-level bugs, not document-level ones; the gap between intent and the
+actual Rules Sheet/Traitor Brief text is a separate, not-yet-tested question.
+
+## Stage 3 — reasoning / interpretive report (Claude reads Claude)
+    python3 run_reasoning_report.py --games 3 4 --winners TRAITORS TRAITORS \
+        --final-alive 3 3 --traces-dir traces
+
+Takes real stage-2 trace files and produces prose case studies, not stats — a
+separate Claude pass per game, reading (1) a small set of facts extracted
+deterministically in Python (role layout, elimination order/cause — see the
+`note` field it emits for exactly what's inferred vs. verified) and (2) the
+full raw reasoning trace, then writing the role layout, the elimination arc,
+notable reasoning moments, how each mechanic played, and a closer. Emits
+`reports/reasoning_<date>.html`. N is always small (these are case studies);
+no "how often" claim belongs here — that's `run_structural.py`'s job.
+`--winners`/`--final-alive` come from the run_agents.py console output line,
+since that's the only persisted record of the authoritative outcome.
 
 ## Files
 | file | role |
@@ -48,7 +65,8 @@ finds nothing; the gap between intent and text is the whole point.
 | `agents_claude.py` | Claude-backed agents implementing the protocol. |
 | `llm.py` | API client, JSON contract, retry, cost accounting, MockLLM. |
 | `run_agents.py` | stage-2 harness + archetype reporting. |
-| `rules/` | what the agents read. REPLACE BEFORE USE. |
+| `run_reasoning_report.py` | stage-3 harness — fact extraction (Python) + narrative generation (Claude) + HTML report. |
+| `rules/` | what the agents read. Canon-derived, not verbatim — see `rules/README.md`. |
 | `traces/` | per-game reasoning traces, one JSONL per game. |
 | `traces_mock/` | default output for `--mock` runs — kept separate so plumbing tests never overwrite real trace data. |
 | `reports/` | standalone HTML reports — `structural_<date>.html` (heuristic bots) and `reasoning_<date>.html` (Claude narrative reads of real games). |
