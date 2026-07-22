@@ -9,6 +9,18 @@ Random bots, zero API calls. 17,000 games run, zero invariant violations.
 `coord=1.0` models agents that can reach agreement; `coord=0` is the torture test.
 Exit 0 = all invariants held.
 
+## Stage 1.5 — structural / distributional (heuristic bots, complete)
+    python3 run_structural.py                 # 5000 games, $0, ~8s
+    python3 run_structural.py --games 20000
+
+Deterministic archetype-parameter bots (`heuristic_bots.py`), not random and
+not reasoning — a modeling choice, explicitly flagged as such at the top of
+that file. Runs through the unmodified referee at volumes the Claude tier
+can't afford, and asserts the stage-1 invariants on every game. Emits
+`reports/structural_<date>.html`: win rates, survival curves, mechanic
+firing rates. Answers "how often," not "why" — see the disclaimer in the
+report itself.
+
 ## Stage 2 — agents
     python3 run_agents.py --games 5 --mock              # free plumbing test
     python3 run_agents.py --games 5                     # real, ~$3
@@ -29,6 +41,9 @@ finds nothing; the gap between intent and text is the whole point.
 | `referee.py` | the engine. Owns all state, enforces all rules. |
 | `bots.py` | uniform-random agents (stage 1). |
 | `run_skeleton.py` | stage-1 harness + invariant assertions. |
+| `heuristic_bots.py` | archetype-parameter-driven agents (stage 1.5) — a modeling choice, not ground truth. |
+| `run_structural.py` | stage-1.5 harness + HTML report generator. |
+| `report_common.py` | shared HTML shell/CSS for the structural and reasoning reports. |
 | `archetypes.py` | the twelve personas as data. |
 | `agents_claude.py` | Claude-backed agents implementing the protocol. |
 | `llm.py` | API client, JSON contract, retry, cost accounting, MockLLM. |
@@ -36,6 +51,7 @@ finds nothing; the gap between intent and text is the whole point.
 | `rules/` | what the agents read. REPLACE BEFORE USE. |
 | `traces/` | per-game reasoning traces, one JSONL per game. |
 | `traces_mock/` | default output for `--mock` runs — kept separate so plumbing tests never overwrite real trace data. |
+| `reports/` | standalone HTML reports — `structural_<date>.html` (heuristic bots) and `reasoning_<date>.html` (Claude narrative reads of real games). |
 
 ## Cost
 ~220 API calls per game. At 200 games that is ~44,000 calls.
