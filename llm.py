@@ -16,6 +16,7 @@ from concurrent.futures import ThreadPoolExecutor
 PRICES = {  # USD per million tokens (in, out)
     "claude-haiku-4-5-20251001": (1.00, 5.00),
     "claude-sonnet-4-5-20250929": (3.00, 15.00),
+    "claude-sonnet-5": (2.00, 10.00),  # introductory pricing through 2026-08-31
 }
 
 
@@ -41,11 +42,12 @@ def extract_json(text):
 
 class LLM:
     def __init__(self, model="claude-haiku-4-5-20251001", max_tokens=400,
-                 workers=8, verbose=False):
+                 workers=8, verbose=False, effort=None):
         from anthropic import Anthropic
         self.client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         self.model = model
         self.max_tokens = max_tokens
+        self.effort = effort
         self.pool = ThreadPoolExecutor(max_workers=workers)
         self.verbose = verbose
         self._lock = threading.Lock()
@@ -55,11 +57,15 @@ class LLM:
         self.malformed = 0
 
     def _one(self, system, user, retries=1):
+        kwargs = {}
+        if self.effort:
+            kwargs["output_config"] = {"effort": self.effort}
         for attempt in range(retries + 1):
             try:
                 r = self.client.messages.create(
                     model=self.model, max_tokens=self.max_tokens,
-                    system=system, messages=[{"role": "user", "content": user}])
+                    system=system, messages=[{"role": "user", "content": user}],
+                    **kwargs)
             except Exception as e:
                 if attempt >= retries:
                     return None

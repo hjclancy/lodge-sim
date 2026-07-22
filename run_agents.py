@@ -53,6 +53,8 @@ def main():
     ap.add_argument("--games", type=int, default=5)
     ap.add_argument("--start", type=int, default=0)
     ap.add_argument("--model", default="claude-haiku-4-5-20251001")
+    ap.add_argument("--effort", default=None,
+                    help="low | medium | high | xhigh | max (output_config.effort)")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--mock", action="store_true")
     ap.add_argument("--out", default="traces")
@@ -63,7 +65,8 @@ def main():
     pub, tra = load_rules()
     os.makedirs(args.out, exist_ok=True)
     llm = MockLLM(seed=0) if args.mock else LLM(model=args.model,
-                                                workers=args.workers)
+                                                workers=args.workers,
+                                                effort=args.effort)
 
     wins = Counter(); endings = Counter(); floats = Counter()
     adjud = Counter(); illegal = Counter(); violations = Counter()
