@@ -57,10 +57,13 @@ def main():
                     help="low | medium | high | xhigh | max (output_config.effort)")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--mock", action="store_true")
-    ap.add_argument("--out", default="traces")
+    ap.add_argument("--out", default=None,
+                    help="default: traces_mock/ for --mock, traces/ otherwise")
     ap.add_argument("--budget", type=float, default=25.0,
                     help="USD ceiling; run halts when exceeded")
     args = ap.parse_args()
+    if args.out is None:
+        args.out = "traces_mock" if args.mock else "traces"
 
     pub, tra = load_rules()
     os.makedirs(args.out, exist_ok=True)

@@ -35,6 +35,7 @@ finds nothing; the gap between intent and text is the whole point.
 | `run_agents.py` | stage-2 harness + archetype reporting. |
 | `rules/` | what the agents read. REPLACE BEFORE USE. |
 | `traces/` | per-game reasoning traces, one JSONL per game. |
+| `traces_mock/` | default output for `--mock` runs — kept separate so plumbing tests never overwrite real trace data. |
 
 ## Cost
 ~220 API calls per game. At 200 games that is ~44,000 calls.
