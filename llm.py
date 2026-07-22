@@ -28,13 +28,16 @@ def extract_json(text):
     text = re.sub(r"^```(?:json)?", "", text).strip()
     text = re.sub(r"```$", "", text).strip()
     try:
-        return json.loads(text)
+        data = json.loads(text)
+        if isinstance(data, dict):
+            return data
     except Exception:
         pass
     m = re.search(r"\{.*\}", text, re.S)
     if m:
         try:
-            return json.loads(m.group(0))
+            data = json.loads(m.group(0))
+            return data if isinstance(data, dict) else None
         except Exception:
             return None
     return None
