@@ -30,6 +30,36 @@
       "params_digest": "ff187ff2",
       "params_summary": "defaults ff187ff2",
       "params_overrides": []
+    },
+    {
+      "run_id": "2026-07-27T19:24:58Z",
+      "date": "2026-07-27",
+      "kind": "structural",
+      "report": "structural_2026-07-27-2.html",
+      "games": 5000,
+      "model": "heuristic-bots",
+      "params_digest": "ff187ff2",
+      "params_summary": "defaults ff187ff2",
+      "params_overrides": [],
+      "cost_usd": 0.0,
+      "elapsed_s": 8.2,
+      "notes": "",
+      "traitor_win_pct": 88.06,
+      "faithful_win_pct": 11.94,
+      "final_2_pct": 22.66,
+      "final_3_pct": 47.28,
+      "final_4plus_pct": 30.06,
+      "rope_pct": 100.0,
+      "anchor_break_pct": 18.06,
+      "zero_vote_council_pct": 32.46,
+      "bloc_non_unanimous_per_game": 2.0926,
+      "plate_detections": 2234,
+      "plate_detect_per_game": 0.4468,
+      "succession_trigger_pct": 11.48,
+      "succession_accept_pct": 5.58,
+      "invariant_violations": 0,
+      "commit": "e92bcfa",
+      "run_url": "https://github.com/hjclancy/lodge-sim/actions/runs/30298099408"
     }
   ]
 }
