@@ -21,9 +21,10 @@ import random
 import time
 from collections import Counter, defaultdict
 
-from referee import Referee, TRAITOR, FAITHFUL
+from referee import Referee, PHASES, TRAITOR, FAITHFUL
 from heuristic_bots import HeuristicAgents
-from archetypes import ALL_IDS, ARCHETYPES
+from archetypes import (ALL_IDS, ARCHETYPES, PARAM_KEYS, PARAM_OVERRIDES,
+                        PARAMS_DIGEST, params_snapshot, params_summary)
 from run_skeleton import check
 from report_common import html_shell, table, esc
 
@@ -55,6 +56,9 @@ def run(n_games):
     standing = Counter()                 # archetype -> standing_wins as Traitor
     detects = Counter()                  # archetype -> plate detections
     role_games = Counter()               # archetype -> {TRAITOR/FAITHFUL: n} for balance check
+
+    elim_cause = defaultdict(Counter)    # phase -> {MURDER/BANISHMENT: n}
+    elim_role = defaultdict(Counter)     # phase -> {TRAITOR/FAITHFUL: n}
 
     rope_fired = 0
     anchor_live = []
@@ -113,8 +117,15 @@ def run(n_games):
             role_games[a] += 1
             if p.alive:
                 surv[a][p.role] += 1
-            elif p.role == FAITHFUL and p.eliminated_by == "BANISHMENT":
-                banished_while_faithful[a] += 1
+            else:
+                if p.role == FAITHFUL and p.eliminated_by == "BANISHMENT":
+                    banished_while_faithful[a] += 1
+                # eliminated_at/eliminated_by are set by referee.eliminate, so
+                # unlike the reasoning report's timeline these are read, not
+                # inferred.
+                phase = p.eliminated_at or "?"
+                elim_cause[phase][p.eliminated_by or "?"] += 1
+                elim_role[phase][p.role] += 1
 
         for ev in s.transcript:
             if ev.type == "VOTE_REVEAL":
@@ -139,6 +150,7 @@ def run(n_games):
         adjud=adjud, illegal=illegal, violations=violations, failures=failures,
         surv=surv, seen=seen, banished_while_faithful=banished_while_faithful,
         vote_acc=vote_acc, standing=standing, detects=detects, role_games=role_games,
+        elim_cause=elim_cause, elim_role=elim_role, params=params_snapshot(),
         rope_fired=rope_fired, anchor_live=anchor_live,
         succession_trigger=succession_trigger, succession_accept=succession_accept,
         zero_vote_council=zero_vote_council, zero_traitor_sweep=zero_traitor_sweep,
@@ -323,6 +335,57 @@ def render_report(r, out_path):
         parts.append('<p><span class="pill ok">balanced</span> — every archetype drew '
                       "Traitor within 5 points of the 25% target.</p>")
 
+    # -- parameter set --
+    parts.append("<h2>Parameter set</h2>")
+    p = r["params"]
+    if p["overrides"]:
+        n_over = len(p["overrides"])
+        phrase = ("One parameter was replaced" if n_over == 1
+                  else f"{n_over} parameters were replaced")
+        parts.append(
+            '<p><span class="pill bad">overridden</span> This batch did not run on the '
+            f'committed values. {phrase} for this run only, and never written back to '
+            "archetypes.json:</p><ul>" +
+            "".join(f"<li><code>{esc(c)}</code></li>" for c in p["overrides"]) + "</ul>")
+    else:
+        parts.append('<p><span class="pill ok">defaults</span> This batch ran on the '
+                     "committed archetypes.json with no overrides.</p>")
+    parts.append(table(
+        ["Archetype"] + list(PARAM_KEYS),
+        [[f"{a} {ARCHETYPES[a]['name']}"] + [f"{p['params'][a][k]:g}" for k in PARAM_KEYS]
+         for a in ALL_IDS],
+        note=(f"Digest {p['digest']}. Two batches with the same digest ran on the same "
+              "numbers, whatever archetypes.json said at the time. These values are "
+              "heuristic_bots.py's inputs; that file is explicit that its "
+              "parameter-to-decision mapping is a modeling choice, so changing a number "
+              "here changes what the model does, not what a person with that temperament "
+              "would do."),
+    ))
+
+    # -- elimination timing --
+    parts.append("<h2>Elimination timing</h2>")
+    phases = [ph for ph in PHASES if r["elim_cause"].get(ph)]
+    if phases:
+        rows = []
+        for ph in phases:
+            c = r["elim_cause"][ph]
+            role = r["elim_role"][ph]
+            total = sum(c.values())
+            rows.append([ph, f"{total:,}", f"{total/n:.2f}",
+                         f"{c.get('MURDER', 0):,}", f"{c.get('BANISHMENT', 0):,}",
+                         f"{role.get(TRAITOR, 0):,}", f"{role.get(FAITHFUL, 0):,}"])
+        parts.append(table(
+            ["Phase", "Eliminations", "Per game", "Murdered", "Banished",
+             "Were Traitor", "Were Faithful"],
+            rows,
+            note=("Read from the referee's own eliminated_at/eliminated_by fields, not "
+                  "inferred — unlike the reasoning report's timeline, which reconstructs "
+                  "this from trace continuity because the event transcript isn't "
+                  "persisted."),
+        ))
+    else:
+        parts.append("<p>No eliminations recorded.</p>")
+
     # -- invariants --
     parts.append("<h2>Invariant check</h2>")
     if ok:
@@ -338,6 +401,7 @@ def render_report(r, out_path):
 
     header_meta = (f"n = {n:,} games &middot; heuristic bots (zero API calls) &middot; "
                    f"{r['elapsed']:.1f}s wall-clock &middot; "
+                   f"params {esc(params_summary())} &middot; "
                    f"generated {datetime.date.today().isoformat()}")
     body = "\n".join(parts)
     doc = html_shell(
@@ -351,6 +415,74 @@ def render_report(r, out_path):
     with open(out_path, "w") as f:
         f.write(doc)
     return out_path
+
+
+# ------------------------------------------------------- machine-readable
+
+def report_data(r):
+    """The same numbers the HTML shows, in the shape the dashboard charts
+    want. Kept next to render_report deliberately: if a series here stops
+    matching a table there, the two are meant to be edited together."""
+    n = r["n_games"]
+    return {
+        "schema": 1,
+        "kind": "structural",
+        "games": n,
+        "model": "heuristic-bots",
+        "elapsed_s": round(r["elapsed"], 1),
+        "params": r["params"],
+        "archetypes": [{"id": a, "name": ARCHETYPES[a]["name"]} for a in ALL_IDS],
+        "survival": [
+            {
+                "id": a,
+                "faithful_pct": (100.0 * r["surv"][a][FAITHFUL] / r["seen"][a][FAITHFUL]
+                                 if r["seen"][a][FAITHFUL] else None),
+                "traitor_pct": (100.0 * r["surv"][a][TRAITOR] / r["seen"][a][TRAITOR]
+                                if r["seen"][a][TRAITOR] else None),
+                "vote_accuracy_pct": (100.0 * r["vote_acc"][a][0] / r["vote_acc"][a][1]
+                                      if r["vote_acc"][a][1] else None),
+                "banished_while_faithful_pct": (
+                    100.0 * r["banished_while_faithful"].get(a, 0) / r["seen"][a][FAITHFUL]
+                    if r["seen"][a][FAITHFUL] else None),
+            }
+            for a in ALL_IDS
+        ],
+        "elimination_timing": [
+            {
+                "phase": ph,
+                "murdered": r["elim_cause"][ph].get("MURDER", 0),
+                "banished": r["elim_cause"][ph].get("BANISHMENT", 0),
+                "were_traitor": r["elim_role"][ph].get(TRAITOR, 0),
+                "were_faithful": r["elim_role"][ph].get(FAITHFUL, 0),
+                "per_game": sum(r["elim_cause"][ph].values()) / n,
+            }
+            for ph in PHASES if r["elim_cause"].get(ph)
+        ],
+        "plate_detection": [
+            {"id": a, "detections": r["detects"].get(a, 0),
+             "per_game": r["detects"].get(a, 0) / n}
+            for a in ALL_IDS
+        ],
+        "float_events": (
+            [{"tag": t, "games": r["floats"].get(t, 0), "pct": 100.0 * r["floats"].get(t, 0) / n}
+             for t in ("ANCHOR_BREAK", "SUCCESSION_ACCEPT", "ZERO_VOTE_COUNCIL")]
+            + [{"tag": "ZERO_TRAITOR_SWEEP", "games": r["zero_traitor_sweep"],
+                "pct": 100.0 * r["zero_traitor_sweep"] / n},
+               {"tag": "ROPE_RAISED", "games": r["rope_fired"],
+                "pct": 100.0 * r["rope_fired"] / n}]
+        ),
+        "standing_wins": [{"id": a, "count": r["standing"].get(a, 0)} for a in ALL_IDS],
+        "adjudications": [{"tag": k, "count": v, "per_game": v / n}
+                          for k, v in r["adjud"].most_common()],
+        "illegal_actions": [{"tag": k, "count": v, "per_game": v / n}
+                            for k, v in r["illegal"].most_common()],
+        "outcomes": {
+            "traitor_win_pct": 100.0 * r["wins"].get("TRAITORS", 0) / n,
+            "faithful_win_pct": 100.0 * r["wins"].get("FAITHFUL", 0) / n,
+            "endings": {k: r["endings"].get(k, 0) for k in ("Final 2", "Final 3", "Final 4+")},
+        },
+        "invariant_violations": sum(r["violations"].values()),
+    }
 
 
 def main():

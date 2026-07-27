@@ -1,0 +1,21 @@
+{
+  "id": "reasoning_2026-07-22",
+  "label": "2026-07-22 \u00b7 Reasoning \u00b7 2 games \u00b7 claude-sonnet-5",
+  "report": "reasoning_2026-07-22.html",
+  "games": [
+    {
+      "game_id": 3,
+      "winner": "TRAITORS",
+      "final_alive": 3,
+      "decisions": 189,
+      "file": "data/traces/reasoning_2026-07-22/game_0003.json"
+    },
+    {
+      "game_id": 4,
+      "winner": "TRAITORS",
+      "final_alive": 3,
+      "decisions": 181,
+      "file": "data/traces/reasoning_2026-07-22/game_0004.json"
+    }
+  ]
+}

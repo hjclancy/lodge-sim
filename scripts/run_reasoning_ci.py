@@ -35,7 +35,7 @@ import json
 import os
 import sys
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _REPO = os.path.dirname(_HERE)
@@ -43,13 +43,16 @@ for _p in (_REPO, _HERE):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from referee import Referee
+from referee import Referee, PHASES, TRAITOR, FAITHFUL
 from run_skeleton import check
 from run_agents import assignment_for, load_rules
 from agents_claude import ClaudeAgents
+from archetypes import ALL_IDS, ARCHETYPES, PARAM_OVERRIDES, params_snapshot, params_summary
 from llm import LLM, MockLLM
+import publish_traces
 import run_reasoning_report as rr
-from report_history import append_row, new_row, unique_report_path, REPO_ROOT
+from report_history import (append_row, new_row, unique_report_path, write_report_data,
+                            REPO_ROOT)
 
 # Ceilings. The Sonnet-5 batch of 2026-07-22 cost $2.50–$3.20 per game at
 # effort=high, so $25 is roughly 8 games — well past the point where a case
@@ -123,6 +126,13 @@ def play_batch(llm, games, out_dir, start=0):
         wins=Counter(), endings=Counter(), floats=Counter(), adjud=Counter(),
         illegal=Counter(), violations=Counter(), rope_fired=0,
         succession_trigger=0, succession_accept=0, plate_detections=0,
+        zero_traitor_sweep=0,
+        # Same shapes run_structural collects, so the dashboard can chart a
+        # Sonnet batch and a heuristic batch with one set of drawing code.
+        surv=defaultdict(Counter), seen=defaultdict(Counter),
+        vote_acc=defaultdict(lambda: [0, 0]), banished_while_faithful=Counter(),
+        detects_by_arch=Counter(), standing=Counter(),
+        elim_cause=defaultdict(Counter), elim_role=defaultdict(Counter),
     )
     stopped = None
 
@@ -159,18 +169,44 @@ def play_batch(llm, games, out_dir, start=0):
                 agg["succession_accept"] += 1
         for a in s.adjudications:
             agg["adjud"][a["tag"]] += 1
+            if a["tag"] == "ZERO_TRAITORS_FAITHFUL_WIN":
+                agg["zero_traitor_sweep"] += 1
         for i in s.illegal_actions:
             agg["illegal"][i["tag"]] += 1
         if any(e.type == "ROPE_UP" for e in s.transcript):
             agg["rope_fired"] += 1
         agg["succession_trigger"] += len(s.metrics.get("succession_trigger", []))
 
+        traitor_ids = {p.pid for p in s.players.values() if p.role == TRAITOR}
+        for pid, p in s.players.items():
+            a = assign[pid]
+            agg["seen"][a][p.role] += 1
+            if p.alive:
+                agg["surv"][a][p.role] += 1
+            else:
+                if p.role == FAITHFUL and p.eliminated_by == "BANISHMENT":
+                    agg["banished_while_faithful"][a] += 1
+                agg["elim_cause"][p.eliminated_at or "?"][p.eliminated_by or "?"] += 1
+                agg["elim_role"][p.eliminated_at or "?"][p.role] += 1
+        for ev in s.transcript:
+            if ev.type == "VOTE_REVEAL":
+                for voter, tgt in ev.payload["ballots"].items():
+                    if voter in assign and s.players[voter].role == FAITHFUL:
+                        agg["vote_acc"][assign[voter]][1] += 1
+                        if tgt in traitor_ids:
+                            agg["vote_acc"][assign[voter]][0] += 1
+        for k, v in s.metrics.items():
+            if k.startswith("standing_win_"):
+                pid = k.split("_")[-1]
+                if pid in assign:
+                    agg["standing"][assign[pid]] += len(v)
+
         # §8.3 detection is reasoning-gated at this tier: same unprompted-mention
         # parse run_agents.py uses. Never convert this to a probability.
-        agg["plate_detections"] += sum(
-            1 for t in traces
-            if t["tag"] == "dinner"
-            and any(w in t["reasoning"].lower() for w in PLATE_WORDS))
+        for t in traces:
+            if t["tag"] == "dinner" and any(w in t["reasoning"].lower() for w in PLATE_WORDS):
+                agg["plate_detections"] += 1
+                agg["detects_by_arch"][t["archetype"]] += 1
 
         trace_path = os.path.join(out_dir, f"game_{g:04d}.jsonl")
         with open(trace_path, "w") as f:
@@ -231,6 +267,72 @@ def metrics_from(agg, n):
         "plate_detect_per_game": agg["plate_detections"] / n,
         "succession_trigger_pct": pct(agg["succession_trigger"]),
         "succession_accept_pct": pct(agg["succession_accept"]),
+        "invariant_violations": sum(agg["violations"].values()),
+    }
+
+
+def report_data(agg, n, model, elapsed_s):
+    """Same shape as run_structural.report_data, so charts.html draws both
+    tiers with one set of code. The numbers underneath are not comparable and
+    the dashboard says so; the shape is, and that is all this is for."""
+    return {
+        "schema": 1,
+        "kind": "reasoning",
+        "games": n,
+        "model": model,
+        "elapsed_s": round(elapsed_s, 1),
+        "params": params_snapshot(),
+        "archetypes": [{"id": a, "name": ARCHETYPES[a]["name"]} for a in ALL_IDS],
+        "survival": [
+            {
+                "id": a,
+                "faithful_pct": (100.0 * agg["surv"][a][FAITHFUL] / agg["seen"][a][FAITHFUL]
+                                 if agg["seen"][a][FAITHFUL] else None),
+                "traitor_pct": (100.0 * agg["surv"][a][TRAITOR] / agg["seen"][a][TRAITOR]
+                                if agg["seen"][a][TRAITOR] else None),
+                "vote_accuracy_pct": (100.0 * agg["vote_acc"][a][0] / agg["vote_acc"][a][1]
+                                      if agg["vote_acc"][a][1] else None),
+                "banished_while_faithful_pct": (
+                    100.0 * agg["banished_while_faithful"].get(a, 0) / agg["seen"][a][FAITHFUL]
+                    if agg["seen"][a][FAITHFUL] else None),
+            }
+            for a in ALL_IDS
+        ],
+        "elimination_timing": [
+            {
+                "phase": ph,
+                "murdered": agg["elim_cause"][ph].get("MURDER", 0),
+                "banished": agg["elim_cause"][ph].get("BANISHMENT", 0),
+                "were_traitor": agg["elim_role"][ph].get(TRAITOR, 0),
+                "were_faithful": agg["elim_role"][ph].get(FAITHFUL, 0),
+                "per_game": sum(agg["elim_cause"][ph].values()) / n,
+            }
+            for ph in PHASES if agg["elim_cause"].get(ph)
+        ],
+        "plate_detection": [
+            {"id": a, "detections": agg["detects_by_arch"].get(a, 0),
+             "per_game": agg["detects_by_arch"].get(a, 0) / n}
+            for a in ALL_IDS
+        ],
+        "float_events": (
+            [{"tag": t, "games": agg["floats"].get(t, 0),
+              "pct": 100.0 * agg["floats"].get(t, 0) / n}
+             for t in ("ANCHOR_BREAK", "SUCCESSION_ACCEPT", "ZERO_VOTE_COUNCIL")]
+            + [{"tag": "ZERO_TRAITOR_SWEEP", "games": agg["zero_traitor_sweep"],
+                "pct": 100.0 * agg["zero_traitor_sweep"] / n},
+               {"tag": "ROPE_RAISED", "games": agg["rope_fired"],
+                "pct": 100.0 * agg["rope_fired"] / n}]
+        ),
+        "standing_wins": [{"id": a, "count": agg["standing"].get(a, 0)} for a in ALL_IDS],
+        "adjudications": [{"tag": k, "count": v, "per_game": v / n}
+                          for k, v in agg["adjud"].most_common()],
+        "illegal_actions": [{"tag": k, "count": v, "per_game": v / n}
+                            for k, v in agg["illegal"].most_common()],
+        "outcomes": {
+            "traitor_win_pct": 100.0 * agg["wins"].get("TRAITORS", 0) / n,
+            "faithful_win_pct": 100.0 * agg["wins"].get("FAITHFUL", 0) / n,
+            "endings": {k: agg["endings"].get(k, 0) for k in ("Final 2", "Final 3", "Final 4+")},
+        },
         "invariant_violations": sum(agg["violations"].values()),
     }
 
@@ -330,6 +432,8 @@ def main():
     traces_dir = args.traces_dir or os.path.join(REPO_ROOT, "traces_ci", stamp)
 
     print(f"reasoning batch: {games} game(s), model={args.model}, effort={args.effort}")
+    print(f"parameters: {params_summary()}"
+          + (f" ({', '.join(PARAM_OVERRIDES)})" if PARAM_OVERRIDES else ""))
     print(f"ceiling ${budget:.2f} total = ${agent_cap:.2f} agents + ${reserve:.2f} narration reserve")
     print(f"traces -> {os.path.relpath(traces_dir, REPO_ROOT)}\n")
 
@@ -354,18 +458,34 @@ def main():
     elapsed = time.time() - t0
 
     out_path = args.out or unique_report_path("reasoning")
+    report_name = os.path.basename(out_path)
+
+    # Publish the traces before rendering: the report links to them per game,
+    # and a link that lands nowhere is worse than no link.
+    manifest = publish_traces.publish(
+        report_name,
+        [{"game_id": p["game_id"], "trace": p["trace"], "winner": p["winner"],
+          "final_alive": p["final_alive"]} for p in played],
+        label=(f"{datetime.date.today().isoformat()} · Reasoning · "
+               f"{len(played)} game(s) · {args.model}"),
+    )
+
     meta_bits = [
         f"N = {len(sections)} narrated of {len(played)} played",
         f"{args.model}, effort={args.effort}",
         f"agents ${agent_spend:.2f} + narration ${narration_spend:.2f} = "
         f"${total_spend:.2f} of ${budget:.2f} ceiling",
+        f"params {params_summary()}",
         f"generated {datetime.date.today().isoformat()}",
     ]
     if stopped:
         meta_bits.append(f"batch halted: {stopped}")
     if skipped:
         meta_bits.append(f"{skipped} game(s) played but not narrated (budget)")
-    rr.render_report(sections, out_path, " &middot; ".join(meta_bits))
+    rr.render_report(sections, out_path, " &middot; ".join(meta_bits),
+                     batch_id=manifest["id"])
+    data_path = write_report_data(
+        report_name, report_data(agg, len(played), args.model, elapsed))
 
     notes = f"{llm.calls} calls, {llm.malformed} malformed"
     if stopped:
@@ -382,6 +502,7 @@ def main():
         cost_usd=total_spend,
         elapsed_s=elapsed,
         notes=notes,
+        params=params_snapshot(),
     )
     append_row(row)
 
@@ -395,8 +516,11 @@ def main():
           f"({agg['illegal'].get('BLOC_VOTE_NON_UNANIMOUS', 0)/len(played):.2f}/game)")
     print(f"  plate detections   {agg['plate_detections']}")
     print(f"  invariants         {sum(agg['violations'].values())} violation(s)")
+    print(f"  parameters         {params_summary()}")
     print(f"\nreport   {os.path.relpath(out_path, REPO_ROOT)}")
-    print(f"traces   {os.path.relpath(traces_dir, REPO_ROOT)}")
+    print(f"data     {os.path.relpath(data_path, REPO_ROOT)}")
+    print(f"traces   {os.path.relpath(traces_dir, REPO_ROOT)} "
+          f"(published to reports/data/traces/{manifest['id']}/)")
     print("history  reports/history.json (+1 row)")
 
     return 1 if agg["violations"] else 0

@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lodge — Charts</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8F%94%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --ink: #2a2622;
+  --ink-soft: #5a5349;
+  --paper: #faf7f0;
+  --panel: #ffffff;
+  --line: #e2dccd;
+  --accent: #6b3f2a;
+  --accent-soft: #9c6b4c;
+  --disclaimer-bg: #fff3d6;
+  --disclaimer-border: #c9962f;
+  --good: #3f6b3f;
+  --bad: #a13b3b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 0 4rem 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Georgia, "Iowan Old Style", serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+header.page {
+  background: var(--accent);
+  color: #fbf3e6;
+  padding: 2.2rem 0 1.6rem 0;
+  margin-bottom: 2rem;
+}
+header.page .wrap h1 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+header.page .wrap .meta {
+  color: #ecd9bd;
+  font-size: 0.95rem;
+}
+h2 {
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 0.35rem;
+  margin-top: 2.4rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-top: 1.6rem;
+}
+p { max-width: 72ch; }
+.summary {
+  font-size: 1.08rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1.1rem 1.3rem;
+}
+.disclaimer {
+  background: var(--disclaimer-bg);
+  border-left: 5px solid var(--disclaimer-border);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  margin: 1.4rem 0;
+  font-size: 0.98rem;
+}
+.disclaimer strong { color: #6b4c00; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8rem 0 1.6rem 0;
+  background: var(--panel);
+  font-size: 0.95rem;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent);
+  padding-bottom: 0.3rem;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.75rem;
+  text-align: right;
+}
+th:first-child, td:first-child { text-align: left; }
+thead th {
+  background: #f1e9d8;
+  color: var(--ink);
+  font-weight: 600;
+}
+tbody tr:nth-child(even) { background: #fbf8f1; }
+.note {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: -0.9rem 0 1.6rem 0;
+}
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pill.ok { background: #e2ecdd; color: var(--good); }
+.pill.bad { background: #f4dede; color: var(--bad); }
+footer.page {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ece6d9;
+    --ink-soft: #b8b0a0;
+    --paper: #201d18;
+    --panel: #2a2620;
+    --line: #453f34;
+    --accent: #d99b6c;
+    --accent-soft: #c98a58;
+    --disclaimer-bg: #3a2f14;
+    --disclaimer-border: #d9a53a;
+    --good: #8fbf8f;
+    --bad: #e08a8a;
+  }
+  header.page { background: #3a2416; color: #f3e6d4; }
+  header.page .wrap .meta { color: #d9c2a0; }
+  thead th { background: #362f22; }
+  tbody tr:nth-child(even) { background: #262219; }
+  .disclaimer strong { color: #f0c874; }
+}
+
+.wrap { max-width: 1180px; }
+.prose, .summary, .disclaimer, footer.page { max-width: 80ch; }
+a { color: var(--accent); }
+nav.site {
+  background: var(--panel); border-bottom: 1px solid var(--line);
+  margin-bottom: 2rem; position: sticky; top: 0; z-index: 5;
+}
+nav.site .wrap { display: flex; gap: 0.3rem; flex-wrap: wrap; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+nav.site a {
+  padding: 0.35rem 0.85rem; border-radius: 6px; text-decoration: none;
+  color: var(--ink-soft); font-size: 0.92rem; font-weight: 600;
+}
+nav.site a:hover { background: var(--paper); color: var(--accent); }
+nav.site a[aria-current="page"] { background: var(--accent); color: #fbf3e6; }
+header.page { margin-bottom: 0; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
+.scroll table { margin: 0; font-size: 0.88rem; }
+.scroll th, .scroll td { padding: 0.42rem 0.6rem; }
+.scroll + p.note { margin-top: 0.3rem; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.kind { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 999px;
+        font-size: 0.78rem; font-weight: 600; border: 1px solid var(--line); }
+.kind.structural { background: #e6edf5; color: #2f4a6b; }
+.kind.reasoning  { background: #f0e8f5; color: #573b6b; }
+.kind.other      { background: #ece9e2; color: var(--ink-soft); }
+.controls { margin: 1.2rem 0 0.8rem 0; display: flex; gap: 0.5rem;
+            flex-wrap: wrap; align-items: center; }
+.controls .label { font-size: 0.85rem; color: var(--ink-soft); }
+button.btn, select.ctl, input.ctl {
+  font: inherit; font-size: 0.88rem; padding: 0.3rem 0.8rem;
+  border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink);
+}
+button.btn { cursor: pointer; font-weight: 600; }
+button.btn:hover { border-color: var(--accent); color: var(--accent); }
+button.btn.primary { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
+button.btn.primary:hover { color: #fff; opacity: 0.92; }
+button.btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
+.chartbox {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 1rem 1.1rem 0.8rem 1.1rem; margin: 0.6rem 0 1.6rem 0;
+}
+.chartbox h3 { margin: 0 0 0.2rem 0; color: var(--accent); font-size: 1rem; }
+.chartbox .cap { color: var(--ink-soft); font-size: 0.85rem; margin: 0 0 0.7rem 0; max-width: 78ch; }
+.chartwrap { position: relative; height: 340px; }
+.banner {
+  border-radius: 6px; padding: 0.8rem 1.1rem; margin: 1rem 0;
+  border-left: 5px solid var(--disclaimer-border); background: var(--disclaimer-bg);
+  font-size: 0.95rem;
+}
+.banner.hidden { display: none; }
+.empty { color: var(--ink-soft); font-style: italic; }
+code { font-size: 0.9em; background: rgba(127,127,127,0.13); padding: 0.05rem 0.3rem; border-radius: 3px; }
+pre.code {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.45;
+}
+@media (prefers-color-scheme: dark) {
+  .kind.structural { background: #24313f; color: #a8c6e6; }
+  .kind.reasoning  { background: #332a3d; color: #d0b3e6; }
+  .kind.other      { background: #322d25; color: var(--ink-soft); }
+}
+
+.paramtable { font-size: 0.82rem; }
+.paramtable td, .paramtable th { padding: 0.3rem 0.5rem; }
+.meta-line { color: var(--ink-soft); font-size: 0.9rem; margin: 0.2rem 0 1rem 0; }
+.meta-line strong { color: var(--ink); }
+</style>
+</head>
+<body>
+<header class="page"><div class="wrap">
+  <h1>The Lodge — Charts</h1>
+  <div class="meta">1 batch with exported data &middot; drawn in the browser from reports/data/</div>
+</div></header>
+<nav class="site"><div class="wrap"><a href="index.html">Reports</a><a href="charts.html" aria-current="page">Charts</a><a href="params.html">Parameters</a><a href="trace.html">Traces</a></div></nav>
+<div class="wrap">
+<div class="controls"><span class="label">Batch</span><select class="ctl" id="batch"><option value="0">2026-07-27 · Structural · 5,000 games · defaults ff187ff2</option></select></div>
+<div class="banner hidden" id="err"></div>
+<div id="meta"></div>
+<div id="charts" style="display:none"><div class="chartbox"><h3>Archetype survival to end, by role</h3><p class="cap">Share of games in which an archetype was still alive at the end, split by the role it drew. The §5.2 bias applies: this speech model discards volume and interruption, so loud archetypes are under-modelled and quiet ones over-modelled.</p><div class="chartwrap"><canvas id="c-survival"></canvas></div></div><div class="chartbox"><h3>Elimination timing by phase</h3><p class="cap">Where in the weekend players leave, and how. Murder and banishment are stacked because they are the only two ways out; the referee records both directly, so unlike the reasoning report&#x27;s timeline nothing here is inferred.</p><div class="chartwrap"><canvas id="c-elimination"></canvas></div></div><div class="chartbox"><h3>Plate detection by archetype (§8.3)</h3><p class="cap">Detections per game. At this tier detection is a gated roll on the archetype&#x27;s `object` parameter, not a reasoning trace — a deliberately different mechanism from the Claude tier&#x27;s reasoning-gated detection. Expect A06 and A12 to dominate.</p><div class="chartwrap"><canvas id="c-plate"></canvas></div></div><div class="chartbox"><h3>Float event and mechanic rates</h3><p class="cap">Share of games in which each event fired at least once.</p><div class="chartwrap"><canvas id="c-floats"></canvas></div></div></div>
+<footer class="page">Generated by scripts/ from the committed reports and history. Every page is a single file; no build step.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script>
+
+
+const PALETTE = ["#6b3f2a", "#3f6b3f", "#2f4a6b", "#a13b3b", "#8a6b1f", "#573b6b", "#1f6b6b", "#9c6b4c"];
+function themeInk() {
+  return getComputedStyle(document.body).getPropertyValue('color') || '#2a2622';
+}
+function gridColor() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)';
+}
+function chartsAvailable(bannerId) {
+  if (typeof Chart !== 'undefined') return true;
+  const b = document.getElementById(bannerId);
+  if (b) {
+    b.textContent = 'Chart.js could not be loaded from the CDN, so the charts on this '
+      + 'page are unavailable. The same numbers are in the report tables linked above. '
+      + 'If this is a blocked network rather than an outage, the script tag at the '
+      + 'bottom of this page is the only external request the site makes.';
+    b.classList.remove('hidden');
+  }
+  return false;
+}
+function baseOptions(extra) {
+  const o = {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { labels: { color: themeInk(), boxWidth: 12, font: { size: 12 } } },
+      tooltip: { padding: 10 }
+    },
+    scales: {
+      x: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { color: gridColor() } },
+      y: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { color: gridColor() },
+           beginAtZero: true }
+    }
+  };
+  return Object.assign(o, extra || {});
+}
+
+
+async function loadJSON(path) {
+  if (location.protocol === 'file:') {
+    throw new Error('This page reads its data with fetch(), which browsers block on '
+      + 'file:// URLs. Serve the folder instead: run "python3 -m http.server" inside '
+      + 'reports/ and open http://localhost:8000/, or just use the published Pages site.');
+  }
+  const res = await fetch(path, { cache: 'no-cache' });
+  if (!res.ok) throw new Error('could not load ' + path + ' (HTTP ' + res.status + ')');
+  return res.json();
+}
+function showError(id, err) {
+  const b = document.getElementById(id);
+  if (!b) return;
+  b.textContent = String(err.message || err);
+  b.classList.remove('hidden');
+}
+
+
+const BATCHES = [{"id": "structural_2026-07-27", "label": "2026-07-27 \u00b7 Structural \u00b7 5,000 games \u00b7 defaults ff187ff2", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27.json", "report": "structural_2026-07-27.html"}];
+const charts = {};
+
+function destroyAll() {
+  Object.keys(charts).forEach(function (k) { charts[k].destroy(); delete charts[k]; });
+}
+
+function pct(v) { return v === null || v === undefined ? null : Math.round(v * 10) / 10; }
+
+function drawSurvival(d) {
+  const labels = d.survival.map(function (s) { return s.id; });
+  charts.survival = new Chart(document.getElementById('c-survival'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: 'Faithful survival %', data: d.survival.map(function (s) { return pct(s.faithful_pct); }),
+          backgroundColor: PALETTE[1] },
+        { label: 'Traitor survival %', data: d.survival.map(function (s) { return pct(s.traitor_pct); }),
+          backgroundColor: PALETTE[3] }
+      ]
+    },
+    options: baseOptions({
+      plugins: {
+        legend: { labels: { color: themeInk(), boxWidth: 12 } },
+        tooltip: { callbacks: { title: function (items) {
+          const i = items[0].dataIndex;
+          return d.archetypes[i].id + ' ' + d.archetypes[i].name;
+        } } }
+      },
+      scales: {
+        x: { ticks: { color: themeInk() }, grid: { display: false } },
+        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+             beginAtZero: true, max: 100, title: { display: true, text: '% surviving',
+             color: themeInk() } }
+      }
+    })
+  });
+}
+
+function drawElimination(d) {
+  const rows = d.elimination_timing || [];
+  charts.elimination = new Chart(document.getElementById('c-elimination'), {
+    type: 'bar',
+    data: {
+      labels: rows.map(function (r) { return r.phase; }),
+      datasets: [
+        { label: 'Murdered', data: rows.map(function (r) { return r.murdered / d.games; }),
+          backgroundColor: PALETTE[3] },
+        { label: 'Banished', data: rows.map(function (r) { return r.banished / d.games; }),
+          backgroundColor: PALETTE[2] }
+      ]
+    },
+    options: baseOptions({
+      scales: {
+        x: { stacked: true, ticks: { color: themeInk(), maxRotation: 60, minRotation: 45 },
+             grid: { display: false } },
+        y: { stacked: true, ticks: { color: themeInk() }, grid: { color: gridColor() },
+             beginAtZero: true,
+             title: { display: true, text: 'eliminations per game', color: themeInk() } }
+      }
+    })
+  });
+}
+
+function drawPlate(d) {
+  const rows = d.plate_detection || [];
+  charts.plate = new Chart(document.getElementById('c-plate'), {
+    type: 'bar',
+    data: {
+      labels: rows.map(function (r) { return r.id; }),
+      datasets: [{ label: 'Detections per game',
+                   data: rows.map(function (r) { return Math.round(r.per_game * 1000) / 1000; }),
+                   backgroundColor: PALETTE[5] }]
+    },
+    options: baseOptions({
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { title: function (items) {
+          const i = items[0].dataIndex;
+          return d.archetypes[i].id + ' ' + d.archetypes[i].name;
+        } } }
+      },
+      scales: {
+        x: { ticks: { color: themeInk() }, grid: { display: false } },
+        y: { ticks: { color: themeInk() }, grid: { color: gridColor() }, beginAtZero: true }
+      }
+    })
+  });
+}
+
+function drawFloats(d) {
+  const rows = d.float_events || [];
+  charts.floats = new Chart(document.getElementById('c-floats'), {
+    type: 'bar',
+    data: {
+      labels: rows.map(function (r) { return r.tag; }),
+      datasets: [{ label: '% of games',
+                   data: rows.map(function (r) { return pct(r.pct); }),
+                   backgroundColor: PALETTE.slice(0, rows.length) }]
+    },
+    options: baseOptions({
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+             beginAtZero: true, max: 100 },
+        y: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { display: false } }
+      }
+    })
+  });
+}
+
+function renderMeta(d, batch) {
+  const p = d.params || {};
+  const over = (p.overrides || []);
+  const bits = [
+    '<strong>' + d.games.toLocaleString() + '</strong> games',
+    '<strong>' + d.model + '</strong>',
+    'params <strong>' + (over.length ? over.length + ' override' + (over.length === 1 ? '' : 's')
+                                     : 'defaults') + ' ' + (p.digest || '?') + '</strong>',
+    '<a href="' + batch.report + '">open the full report</a>'
+  ];
+  let html = '<p class="meta-line">' + bits.join(' &middot; ') + '</p>';
+  if (over.length) {
+    html += '<p class="note">Overridden for this batch: <code>'
+         + over.join('</code>, <code>') + '</code></p>';
+  }
+  document.getElementById('meta').innerHTML = html;
+}
+
+async function select(idx) {
+  const batch = BATCHES[idx];
+  if (!batch) return;
+  document.getElementById('err').classList.add('hidden');
+  try {
+    const d = await loadJSON(batch.data);
+    destroyAll();
+    renderMeta(d, batch);
+    document.getElementById('charts').style.display = '';
+    drawSurvival(d);
+    drawElimination(d);
+    drawPlate(d);
+    drawFloats(d);
+  } catch (e) {
+    destroyAll();
+    document.getElementById('charts').style.display = 'none';
+    document.getElementById('meta').innerHTML = '';
+    showError('err', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  if (!BATCHES.length) return;
+  if (!chartsAvailable('err')) return;
+  const sel = document.getElementById('batch');
+  sel.addEventListener('change', function () { select(parseInt(sel.value, 10)); });
+  const wanted = new URLSearchParams(location.search).get('batch');
+  let start = 0;
+  if (wanted) {
+    const i = BATCHES.findIndex(function (b) { return b.id === wanted; });
+    if (i >= 0) start = i;
+  }
+  sel.value = String(start);
+  select(start);
+});
+
+</script>
+</body>
+</html>

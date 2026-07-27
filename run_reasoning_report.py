@@ -209,10 +209,15 @@ def prose_to_html(text):
     return "\n".join(f"<p>{html.escape(p)}</p>" for p in paras)
 
 
-def render_game_section(game_id, facts, narrative_html):
+def render_game_section(game_id, facts, narrative_html, batch_id=None):
     parts = [f"<h2>Game {game_id}</h2>"]
-    parts.append(f'<p class="note">Winner: <strong>{esc(facts["winner"])}</strong> &middot; '
-                  f'ended at Final {facts["final_alive"]}</p>')
+    meta = (f'Winner: <strong>{esc(facts["winner"])}</strong> &middot; '
+            f'ended at Final {facts["final_alive"]}')
+    if batch_id:
+        # The narrative below is a reading of the trace; this is the trace.
+        meta += (f' &middot; <a href="trace.html?batch={esc(batch_id)}&amp;game={game_id}">'
+                 "every decision in this game &rarr;</a>")
+    parts.append(f'<p class="note">{meta}</p>')
 
     parts.append("<h3>Role layout</h3>")
     parts.append(table(
@@ -240,7 +245,11 @@ def render_game_section(game_id, facts, narrative_html):
     return "\n".join(parts)
 
 
-def render_report(games, out_path, model_meta):
+def render_report(games, out_path, model_meta, batch_id=None):
+    """batch_id: the published trace batch these games belong to (the report's
+    own basename). Passing it adds a per-game link to the trace viewer; omit
+    it when the traces have not been published under reports/, so the report
+    never links somewhere that isn't there."""
     disclaimer = (
         '<div class="disclaimer">'
         f'<strong>N = {len(games)}.</strong> These are case studies, not a sample. '
@@ -252,7 +261,8 @@ def render_report(games, out_path, model_meta):
     )
     body = [disclaimer]
     for g in games:
-        body.append(render_game_section(g["game_id"], g["facts"], g["narrative_html"]))
+        body.append(render_game_section(g["game_id"], g["facts"], g["narrative_html"],
+                                        batch_id=batch_id))
 
     header_meta = model_meta
     doc = html_shell(
@@ -300,7 +310,13 @@ def main():
     out_path = args.out or f"reports/reasoning_{date}.html"
     model_meta = (f"N = {len(games)} games &middot; {MODEL}, effort=high &middot; "
                   f"summarization cost ${total_cost:.2f} &middot; generated {date}")
-    render_report(games, out_path, model_meta)
+    # Link to the trace viewer only if these traces have actually been
+    # published under reports/ — see scripts/publish_traces.py.
+    stem = os.path.splitext(os.path.basename(out_path))[0]
+    published = os.path.join(os.path.dirname(out_path) or ".",
+                             "data", "traces", stem, "manifest.json")
+    render_report(games, out_path, model_meta,
+                  batch_id=stem if os.path.exists(published) else None)
     print(f"\nreport written to {out_path}")
     print(f"total summarization cost: ${total_cost:.2f}")
 

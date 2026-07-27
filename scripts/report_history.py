@@ -40,6 +40,7 @@ COLUMNS = [
     ("kind", "Kind", "text"),
     ("games", "Games", "int"),
     ("model", "Model", "text"),
+    ("params_summary", "Params", "text"),
     ("traitor_win_pct", "Traitor win", "pct"),
     ("final_2_pct", "Final 2", "pct"),
     ("rope_pct", "Rope raised", "pct"),
@@ -71,9 +72,26 @@ def provenance():
     return {"commit": (os.environ.get("GITHUB_SHA") or "")[:7] or None, "run_url": url}
 
 
-def new_row(kind, report, games, model, metrics, cost_usd, elapsed_s, notes=""):
+def params_fields(snapshot):
+    """The two archetype-parameter fields every row carries: a digest that
+    identifies the exact numbers a batch ran on, and a one-line summary for
+    the table. Rows written before parameters were configurable have neither,
+    and render as '—' rather than being backfilled with a guess."""
+    if not snapshot:
+        return {"params_digest": None, "params_summary": None, "params_overrides": None}
+    overrides = list(snapshot.get("overrides") or [])
+    n = len(overrides)
+    summary = (f"defaults {snapshot['digest']}" if not n else
+               f"{n} override{'' if n == 1 else 's'} {snapshot['digest']}")
+    return {"params_digest": snapshot["digest"], "params_summary": summary,
+            "params_overrides": overrides}
+
+
+def new_row(kind, report, games, model, metrics, cost_usd, elapsed_s, notes="",
+            params=None):
     """Build a history row. `metrics` supplies METRIC_KEYS; anything the tier
-    cannot measure must be passed as None and is stored as null."""
+    cannot measure must be passed as None and is stored as null. `params` is
+    archetypes.params_snapshot()."""
     now = utc_now()
     row = {
         "run_id": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -82,6 +100,7 @@ def new_row(kind, report, games, model, metrics, cost_usd, elapsed_s, notes=""):
         "report": report,
         "games": games,
         "model": model,
+        **params_fields(params),
         "cost_usd": round(cost_usd, 4) if cost_usd is not None else None,
         "elapsed_s": round(elapsed_s, 1) if elapsed_s is not None else None,
         "notes": notes,
@@ -127,6 +146,22 @@ def unique_report_path(kind, date=None, reports_dir=REPORTS_DIR):
         n += 1
         candidate = os.path.join(reports_dir, f"{base}-{n}.html")
     return candidate
+
+
+DATA_DIR = os.path.join(REPORTS_DIR, "data")
+
+
+def write_report_data(report_filename, data, reports_dir=REPORTS_DIR):
+    """reports/data/<report basename>.json — what the dashboard charts fetch.
+    Lives under reports/ because that directory is the whole published site;
+    anything outside it is not reachable from the page."""
+    out_dir = os.path.join(reports_dir, "data")
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, os.path.splitext(report_filename)[0] + ".json")
+    with open(path, "w") as f:
+        json.dump(data, f, separators=(",", ":"), sort_keys=False)
+        f.write("\n")
+    return path
 
 
 REPORT_RE = re.compile(r"^(structural|reasoning)_(\d{4}-\d{2}-\d{2})(?:-(\d+))?\.html$")
