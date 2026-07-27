@@ -1,0 +1,8 @@
+# Stage 1 (run_skeleton.py) and stage 1.5 (run_structural.py) are pure
+# standard library — the structural workflow installs this file only so that
+# adding a dependency later doesn't quietly break it.
+#
+# Stages 2 and 3 need the Anthropic SDK. The floor is 0.120 because llm.py
+# and run_reasoning_report.py both pass output_config={"effort": ...}, which
+# older clients reject as an unexpected keyword.
+anthropic>=0.120,<1

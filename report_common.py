@@ -144,6 +144,7 @@ footer.page {
   header.page { background: #3a2416; color: #f3e6d4; }
   header.page .wrap .meta { color: #d9c2a0; }
   thead th { background: #362f22; }
+  tbody tr:nth-child(even) { background: #262219; }
   .disclaimer strong { color: #f0c874; }
 }
 """

@@ -1,0 +1,178 @@
+name: Reasoning report (Sonnet batch)
+
+# Stages 2 + 3. Real Claude agents play real games, then a separate Claude
+# pass writes the narrative case study. This one spends money: budget the
+# input, and read the cap logic below before raising it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      games:
+        description: "Number of games to play (1–10). ~$3 each at Sonnet 5, effort=high."
+        required: true
+        default: "2"
+        type: number
+      budget:
+        description: "Total USD ceiling for the run, both stages (0.50–25.00). Hard-capped at 25."
+        required: true
+        default: "10"
+        type: number
+      mock:
+        description: "Plumbing test: MockLLM agents, no API calls, $0. Commits nothing."
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+# Serialised against the structural workflow — both commit to main. Never
+# cancelled: a cancelled run has already spent whatever it spent, and
+# cancelling mid-batch throws that away without producing a report.
+concurrency:
+  group: lodge-reports
+  cancel-in-progress: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # The workflow clamps before the script is ever invoked; the script
+      # clamps again (MAX_BUDGET_USD/MAX_GAMES) so a run started any other
+      # way is bounded too; and BudgetedLLM refuses individual API calls once
+      # the agent share is spent, so a single long game can't overshoot the
+      # way run_agents.py's between-games check allows. Three layers, because
+      # the input box is the one part of this a typo can reach.
+      - name: Validate and clamp inputs
+        id: cfg
+        env:
+          GAMES_INPUT: ${{ inputs.games }}
+          BUDGET_INPUT: ${{ inputs.budget }}
+        run: |
+          case "$GAMES_INPUT" in
+            ''|*[!0-9]*) echo "::error::games must be a whole number, got '$GAMES_INPUT'"; exit 1 ;;
+          esac
+          case "$BUDGET_INPUT" in
+            ''|*[!0-9.]*|*.*.*) echo "::error::budget must be a number, got '$BUDGET_INPUT'"; exit 1 ;;
+          esac
+          games=$(python3 -c 'import sys; print(min(max(int(sys.argv[1]), 1), 10))' "$GAMES_INPUT")
+          budget=$(python3 -c 'import sys; print("%.2f" % min(max(float(sys.argv[1]), 0.50), 25.00))' "$BUDGET_INPUT")
+          [ "$games" = "$GAMES_INPUT" ] || echo "::warning::games clamped from $GAMES_INPUT to $games"
+          same=$(python3 -c 'import sys; print(abs(float(sys.argv[1]) - float(sys.argv[2])) < 1e-9)' \
+                 "$BUDGET_INPUT" "$budget")
+          [ "$same" = "True" ] || echo "::warning::budget clamped from \$$BUDGET_INPUT to \$$budget"
+          echo "games=$games" >> "$GITHUB_OUTPUT"
+          echo "budget=$budget" >> "$GITHUB_OUTPUT"
+
+      - name: Check the API key is present
+        if: ${{ !inputs.mock }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::repository secret ANTHROPIC_API_KEY is not set. Settings → Secrets and variables → Actions → New repository secret. Or re-run with mock=true."
+            exit 1
+          fi
+          echo "ANTHROPIC_API_KEY is set (${#ANTHROPIC_API_KEY} characters)"
+
+      # continue-on-error so a report that did get produced is still committed
+      # when the harness exits non-zero on an invariant violation. The run is
+      # failed at the end instead.
+      - name: Run Sonnet batch and narrate
+        id: harness
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -o pipefail
+          python3 scripts/run_reasoning_ci.py \
+            --games "${{ steps.cfg.outputs.games }}" \
+            --budget "${{ steps.cfg.outputs.budget }}" \
+            ${{ inputs.mock && '--mock' || '' }} 2>&1 | tee run.log
+
+      - name: Upload mock output
+        if: ${{ inputs.mock }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mock-run-${{ github.run_number }}
+          path: |
+            reports_mock/
+            run.log
+          if-no-files-found: warn
+
+      - name: Rebuild reports index
+        if: ${{ !inputs.mock }}
+        run: python3 scripts/make_index.py
+
+      - name: Commit results to main
+        if: ${{ !inputs.mock }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A reports
+          if [ -d traces_ci ]; then git add -A traces_ci; fi
+          if git diff --cached --quiet; then
+            echo "nothing to commit"
+            exit 0
+          fi
+          git commit -m "Reasoning report: ${{ steps.cfg.outputs.games }} games, \$${{ steps.cfg.outputs.budget }} ceiling (run ${{ github.run_number }})" \
+                     -m "Generated by .github/workflows/reasoning.yml"
+          for delay in 2 4 8 16 0; do
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              exit 0
+            fi
+            [ "$delay" = 0 ] && break
+            echo "push failed, retrying in ${delay}s"
+            sleep "$delay"
+          done
+          echo "::error::could not push results to main"
+          exit 1
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Reasoning report — ${{ steps.cfg.outputs.games }} games, \$${{ steps.cfg.outputs.budget }} ceiling"
+            if [ "${{ inputs.mock }}" = "true" ]; then
+              echo
+              echo "**Mock run.** No API calls, nothing committed; output is in the run artifact."
+            fi
+            echo
+            echo '```'
+            cat run.log 2>/dev/null || echo "(harness produced no output)"
+            echo '```'
+            echo
+            echo "Published index: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail the run if the harness did
+        if: steps.harness.outcome == 'failure'
+        run: |
+          echo "::error::the harness exited non-zero — no game completed, or invariants broke. See the log above."
+          exit 1
+
+  publish:
+    needs: report
+    if: ${{ !cancelled() && !inputs.mock }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml

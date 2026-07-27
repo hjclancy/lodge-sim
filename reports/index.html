@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lodge — Reports</title>
+<style>
+:root {
+  --ink: #2a2622;
+  --ink-soft: #5a5349;
+  --paper: #faf7f0;
+  --panel: #ffffff;
+  --line: #e2dccd;
+  --accent: #6b3f2a;
+  --accent-soft: #9c6b4c;
+  --disclaimer-bg: #fff3d6;
+  --disclaimer-border: #c9962f;
+  --good: #3f6b3f;
+  --bad: #a13b3b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 0 4rem 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Georgia, "Iowan Old Style", serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+header.page {
+  background: var(--accent);
+  color: #fbf3e6;
+  padding: 2.2rem 0 1.6rem 0;
+  margin-bottom: 2rem;
+}
+header.page .wrap h1 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+header.page .wrap .meta {
+  color: #ecd9bd;
+  font-size: 0.95rem;
+}
+h2 {
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 0.35rem;
+  margin-top: 2.4rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-top: 1.6rem;
+}
+p { max-width: 72ch; }
+.summary {
+  font-size: 1.08rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1.1rem 1.3rem;
+}
+.disclaimer {
+  background: var(--disclaimer-bg);
+  border-left: 5px solid var(--disclaimer-border);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  margin: 1.4rem 0;
+  font-size: 0.98rem;
+}
+.disclaimer strong { color: #6b4c00; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8rem 0 1.6rem 0;
+  background: var(--panel);
+  font-size: 0.95rem;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent);
+  padding-bottom: 0.3rem;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.75rem;
+  text-align: right;
+}
+th:first-child, td:first-child { text-align: left; }
+thead th {
+  background: #f1e9d8;
+  color: var(--ink);
+  font-weight: 600;
+}
+tbody tr:nth-child(even) { background: #fbf8f1; }
+.note {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: -0.9rem 0 1.6rem 0;
+}
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pill.ok { background: #e2ecdd; color: var(--good); }
+.pill.bad { background: #f4dede; color: var(--bad); }
+footer.page {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ece6d9;
+    --ink-soft: #b8b0a0;
+    --paper: #201d18;
+    --panel: #2a2620;
+    --line: #453f34;
+    --accent: #d99b6c;
+    --accent-soft: #c98a58;
+    --disclaimer-bg: #3a2f14;
+    --disclaimer-border: #d9a53a;
+    --good: #8fbf8f;
+    --bad: #e08a8a;
+  }
+  header.page { background: #3a2416; color: #f3e6d4; }
+  header.page .wrap .meta { color: #d9c2a0; }
+  thead th { background: #362f22; }
+  tbody tr:nth-child(even) { background: #262219; }
+  .disclaimer strong { color: #f0c874; }
+}
+
+/* The report shell is sized for prose; this page is mostly table. Widen the
+   column and re-narrow the prose blocks inside it. */
+.wrap { max-width: 1180px; }
+.summary, .disclaimer, footer.page { max-width: 80ch; }
+.controls { margin: 1.2rem 0 0.6rem 0; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.controls .label { font-size: 0.85rem; color: var(--ink-soft); margin-right: 0.2rem; }
+button.filter {
+  font: inherit; font-size: 0.85rem; cursor: pointer;
+  padding: 0.25rem 0.8rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink-soft);
+}
+button.filter[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
+a { color: var(--accent); }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
+.scroll table { min-width: 1020px; margin: 0; font-size: 0.88rem; }
+.scroll th, .scroll td { padding: 0.42rem 0.6rem; }
+.scroll + p.note { margin-top: 0.3rem; }
+th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+th.sortable::after { content: " \2195"; opacity: 0.35; font-size: 0.8em; }
+th.sortable[data-dir="asc"]::after { content: " \2191"; opacity: 1; }
+th.sortable[data-dir="desc"]::after { content: " \2193"; opacity: 1; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.kind { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 999px;
+        font-size: 0.78rem; font-weight: 600; border: 1px solid var(--line); }
+.kind.structural { background: #e6edf5; color: #2f4a6b; }
+.kind.reasoning  { background: #f0e8f5; color: #573b6b; }
+.kind.other      { background: #ece9e2; color: var(--ink-soft); }
+ul.reports { list-style: none; padding: 0; margin: 0.4rem 0 1.8rem 0; }
+ul.reports li {
+  border: 1px solid var(--line); background: var(--panel); border-radius: 6px;
+  padding: 0.7rem 0.95rem; margin-bottom: 0.5rem;
+  display: flex; gap: 0.7rem; align-items: baseline; flex-wrap: wrap;
+}
+ul.reports a { color: var(--accent); font-weight: 600; text-decoration: none; }
+ul.reports a:hover { text-decoration: underline; }
+ul.reports .sub { color: var(--ink-soft); font-size: 0.86rem; }
+h3.datehead { color: var(--ink-soft); font-size: 0.92rem; margin: 1.4rem 0 0.3rem 0;
+              text-transform: none; letter-spacing: 0.02em; }
+.empty { color: var(--ink-soft); font-style: italic; }
+@media (prefers-color-scheme: dark) {
+  .kind.structural { background: #24313f; color: #a8c6e6; }
+  .kind.reasoning  { background: #332a3d; color: #d0b3e6; }
+  .kind.other      { background: #322d25; color: var(--ink-soft); }
+}
+</style>
+</head>
+<body>
+<header class="page"><div class="wrap">
+  <h1>The Lodge — Reports</h1>
+  <div class="meta">Every batch the simulation has produced &middot; generated 2026-07-27 17:51 UTC</div>
+</div></header>
+<div class="wrap">
+<div class="summary">2 reports (1 structural, 1 reasoning), latest 2026-07-22. No batches logged in <a href="history.json">history.json</a> yet.</div>
+<div class="disclaimer"><strong>The two kinds of row are not the same measurement.</strong> Structural rows are thousands of heuristic-bot games — deterministic rules built from the archetypes' declared parameters, answering "how often" at volume. Reasoning rows are a handful of real Claude-agent games, kept small because they cost real money, and they exist to answer "why" in a specific game. Reading a rate off a two-game reasoning row, or treating a gap between the two kinds as a finding, is a mistake the reports themselves warn about at more length. The columns line up so the same mechanic can be located in both, not so the numbers can be subtracted.</div>
+<div class="controls"><span class="label">Show</span><button class="filter" data-kind="all" aria-pressed="true">All</button><button class="filter" data-kind="structural" aria-pressed="false">Structural</button><button class="filter" data-kind="reasoning" aria-pressed="false">Reasoning</button></div>
+<h2>Batch history</h2>
+<p class="empty">No batch rows yet. reports/history.json gets its first row the next time either workflow runs; reports produced before the workflows existed are listed below but have no metrics recorded.</p>
+<h2>All reports</h2>
+<h3 class="datehead">2026-07-22</h3><ul class="reports">
+<li data-kind="structural"><span class="kind structural">Structural</span><a href="structural_2026-07-22.html">Lodge structural report (5000 games)</a><span class="sub">structural_2026-07-22.html &middot; 11 KB</span></li>
+<li data-kind="reasoning"><span class="kind reasoning">Reasoning</span><a href="reasoning_2026-07-22.html">Lodge reasoning report (N=2)</a><span class="sub">reasoning_2026-07-22.html &middot; 24 KB</span></li>
+</ul>
+<footer class="page">Generated by scripts/make_index.py. Self-contained — no external assets.
+Reports are immutable once written; re-running a workflow adds a new one rather than replacing it.</footer>
+</div>
+<script>
+(function () {
+  var buttons = document.querySelectorAll('button.filter');
+  function apply(kind) {
+    buttons.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.kind === kind));
+    });
+    document.querySelectorAll('[data-kind]').forEach(function (el) {
+      if (el.tagName === 'BUTTON') return;
+      el.style.display = (kind === 'all' || el.dataset.kind === kind) ? '' : 'none';
+    });
+    document.querySelectorAll('h3.datehead').forEach(function (h) {
+      var list = h.nextElementSibling, any = false;
+      if (!list) return;
+      list.querySelectorAll('li').forEach(function (li) { if (li.style.display !== 'none') any = true; });
+      h.style.display = any ? '' : 'none';
+      list.style.display = any ? '' : 'none';
+    });
+  }
+  buttons.forEach(function (b) { b.addEventListener('click', function () { apply(b.dataset.kind); }); });
+
+  var table = document.getElementById('history-table');
+  if (!table) return;
+  table.querySelectorAll('th.sortable').forEach(function (th, idx) {
+    th.addEventListener('click', function () {
+      var dir = th.dataset.dir === 'asc' ? 'desc' : 'asc';
+      table.querySelectorAll('th.sortable').forEach(function (o) { delete o.dataset.dir; });
+      th.dataset.dir = dir;
+      var body = table.tBodies[0];
+      var rows = Array.prototype.slice.call(body.rows);
+      rows.sort(function (a, b) {
+        var x = a.cells[idx].dataset.sort, y = b.cells[idx].dataset.sort;
+        var nx = parseFloat(x), ny = parseFloat(y);
+        var both = !isNaN(nx) && !isNaN(ny);
+        var cmp = both ? (nx - ny) : String(x).localeCompare(String(y));
+        return dir === 'asc' ? cmp : -cmp;
+      });
+      rows.forEach(function (r) { body.appendChild(r); });
+    });
+  });
+})();
+</script>
+</body>
+</html>
