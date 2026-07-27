@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lodge reasoning report (N=2)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --ink: #2a2622;
+  --ink-soft: #5a5349;
+  --paper: #faf7f0;
+  --panel: #ffffff;
+  --line: #e2dccd;
+  --accent: #6b3f2a;
+  --accent-soft: #9c6b4c;
+  --disclaimer-bg: #fff3d6;
+  --disclaimer-border: #c9962f;
+  --good: #3f6b3f;
+  --bad: #a13b3b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 0 4rem 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Georgia, "Iowan Old Style", serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+header.page {
+  background: var(--accent);
+  color: #fbf3e6;
+  padding: 2.2rem 0 1.6rem 0;
+  margin-bottom: 2rem;
+}
+header.page .wrap h1 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+header.page .wrap .meta {
+  color: #ecd9bd;
+  font-size: 0.95rem;
+}
+h2 {
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 0.35rem;
+  margin-top: 2.4rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-top: 1.6rem;
+}
+p { max-width: 72ch; }
+.summary {
+  font-size: 1.08rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1.1rem 1.3rem;
+}
+.disclaimer {
+  background: var(--disclaimer-bg);
+  border-left: 5px solid var(--disclaimer-border);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  margin: 1.4rem 0;
+  font-size: 0.98rem;
+}
+.disclaimer strong { color: #6b4c00; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8rem 0 1.6rem 0;
+  background: var(--panel);
+  font-size: 0.95rem;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent);
+  padding-bottom: 0.3rem;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.75rem;
+  text-align: right;
+}
+th:first-child, td:first-child { text-align: left; }
+thead th {
+  background: #f1e9d8;
+  color: var(--ink);
+  font-weight: 600;
+}
+tbody tr:nth-child(even) { background: #fbf8f1; }
+.note {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: -0.9rem 0 1.6rem 0;
+}
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pill.ok { background: #e2ecdd; color: var(--good); }
+.pill.bad { background: #f4dede; color: var(--bad); }
+footer.page {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ece6d9;
+    --ink-soft: #b8b0a0;
+    --paper: #201d18;
+    --panel: #2a2620;
+    --line: #453f34;
+    --accent: #d99b6c;
+    --accent-soft: #c98a58;
+    --disclaimer-bg: #3a2f14;
+    --disclaimer-border: #d9a53a;
+    --good: #8fbf8f;
+    --bad: #e08a8a;
+  }
+  header.page { background: #3a2416; color: #f3e6d4; }
+  header.page .wrap .meta { color: #d9c2a0; }
+  thead th { background: #362f22; }
+  tbody tr:nth-child(even) { background: #262219; }
+  .disclaimer strong { color: #f0c874; }
+}
+</style>
+</head>
+<body>
+<header class="page"><div class="wrap">
+  <h1>The Lodge — Reasoning / Interpretive Report</h1>
+  <div class="meta">N = 2 narrated of 2 played &middot; claude-sonnet-5, effort=high &middot; agents $6.37 + narration $0.22 = $6.59 of $10.00 ceiling &middot; params defaults ff187ff2 &middot; generated 2026-07-27</div>
+</div></header>
+<div class="wrap">
+<div class="disclaimer"><strong>N = 2.</strong> These are case studies, not a sample. No "how often" or "how distributed" claim should be drawn from two games — that question belongs to the structural report (reports/structural_*.html), which runs thousands of heuristic-bot games for exactly that purpose. What follows is a close read of what happened and why, in two real Claude-agent games, nothing more.</div>
+<h2>Game 0</h2>
+<p class="note">Winner: <strong>TRAITORS</strong> &middot; ended at Final 3 &middot; <a href="trace.html?batch=reasoning_2026-07-27&amp;game=0">every decision in this game &rarr;</a></p>
+<h3>Role layout</h3>
+<table>
+<thead><tr><th>Seat</th><th>Archetype</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td>P01</td><td>A09</td><td>TRAITOR</td></tr>
+<tr><td>P02</td><td>A08</td><td>FAITHFUL</td></tr>
+<tr><td>P03</td><td>A01</td><td>FAITHFUL</td></tr>
+<tr><td>P04</td><td>A11</td><td>FAITHFUL</td></tr>
+<tr><td>P05</td><td>A06</td><td>FAITHFUL</td></tr>
+<tr><td>P06</td><td>A02</td><td>TRAITOR</td></tr>
+<tr><td>P07</td><td>A07</td><td>FAITHFUL</td></tr>
+<tr><td>P08</td><td>A10</td><td>FAITHFUL</td></tr>
+<tr><td>P09</td><td>A04</td><td>FAITHFUL</td></tr>
+<tr><td>P10</td><td>A03</td><td>TRAITOR</td></tr>
+<tr><td>P11</td><td>A12</td><td>FAITHFUL</td></tr>
+<tr><td>P12</td><td>A05</td><td>FAITHFUL</td></tr>
+</tbody></table>
+<h3>Elimination timeline</h3>
+<table>
+<thead><tr><th>#</th><th>Player</th><th>Actual role</th><th>Cause</th><th>~Phase</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>P07 (A07)</td><td>FAITHFUL</td><td>MURDER</td><td>NIGHT_1</td></tr>
+<tr><td>2</td><td>P06 (A02)</td><td>TRAITOR</td><td>BANISHMENT</td><td>RT_1</td></tr>
+<tr><td>3</td><td>P04 (A11)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_2</td></tr>
+<tr><td>4</td><td>P09 (A04)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_3</td></tr>
+<tr><td>5</td><td>P05 (A06)</td><td>FAITHFUL</td><td>MURDER</td><td>SAT_DINNER</td></tr>
+<tr><td>6</td><td>P08 (A10)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_4</td></tr>
+<tr><td>7</td><td>P11 (A12)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_5</td></tr>
+<tr><td>8</td><td>P12 (A05)</td><td>FAITHFUL</td><td>MURDER</td><td>NIGHT_3</td></tr>
+<tr><td>9</td><td>P03 (A01)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_6_FINALE</td></tr>
+</tbody></table>
+<p class="note">elimination phase and cause (MURDER vs BANISHMENT) are inferred, not read from an explicit referee event log — the persisted trace holds only per-decision reasoning. A murdered player&#x27;s phase comes from their own &#x27;will&#x27; entry (only murder victims write one); a banished player&#x27;s phase comes from their last entry tagged with a still-alive action (speak/vote/bloc/etc.), deliberately excluding &#x27;will_court&#x27; and &#x27;transmission_a&#x27; — the Court (all dead players) keeps generating those after death, so counting them would make every dead player look alive until the game ends. Exact vote tallies and who cast the deciding vote are not reconstructed this way; treat any such claim in the narrative as coming from an agent&#x27;s own reasoning text, not independently verified.</p>
+<h3>Survivors</h3>
+<table>
+<thead><tr><th>Seat</th><th>Archetype</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td>P01</td><td>A09</td><td>TRAITOR</td></tr>
+<tr><td>P02</td><td>A08</td><td>FAITHFUL</td></tr>
+<tr><td>P10</td><td>A03</td><td>TRAITOR</td></tr>
+</tbody></table>
+<h3>Narrative</h3>
+<p>The seating this time gave the Traitor faction three of twelve seats, and the mix of personas drawn to those roles turned out to matter more than the raw count. P01 (archetype A09, built around trusting, self-sacrificing openness) drew Traitor and used that persona exactly as designed — a mask of transparency that let him volunteer himself as a suspect over and over without ever being punished for it. P06 (A02, the loud, confident accuser) also drew Traitor, and played to type just as faithfully, opening the game with an aggressive, staked-out accusation against P04. P10 (A03, quiet and low-profile) rounded out the trio, and stayed almost wordless for the entire game. The nine Faithful seats included several analytically inclined archetypes — P03&#x27;s record-keeper (A01), P05&#x27;s observational analyst (A06), P11&#x27;s balanced pushback type (A12) — who spent the whole game visibly reconstructing voting patterns and token movement, which makes the eventual Traitor win feel less like an accident of ignorance and more like a case of good reads being outmaneuvered by persona and social capital.</p>
+<p>The elimination arc opens with Night 1&#x27;s murder of P07, the table&#x27;s one openly distrustful voice; P01&#x27;s own reasoning names him directly as &quot;a threat to my cover&quot; after P07 called out the self-sacrifice framing as deflection, and all three Traitors converge on him for &quot;unanimity.&quot; The first banishment, in RT_1, actually claimed a Traitor — P06 — though nobody at the table knew it; the vote was built on P03, P05, and P12 independently flagging his &quot;silence-then-pivot&quot; pattern after his earlier campaign against P04, a genuinely correct read that the table never got credit for recognizing. That correct instinct didn&#x27;t survive contact with the narrative P06 had planted, though: in RT_2 the suspicion he&#x27;d built around P04 outlived its author, and P04 was banished on cumulative momentum rather than anything new, with P05 explicitly reasoning &quot;no new concrete evidence has emerged, but P04 remains the most consistently flagged.&quot; RT_3&#x27;s bloc mechanic then claimed P09, in a sequence where two rival tethered blocs actually disagreed — one (containing Traitor P01, plus P03, P08, P11, P12, P02) converging on P09 as &quot;the strongest lead,&quot; the other (containing Traitor P10, with P09 and P05) trying to push the vote onto P01 himself before folding back to unanimity — and the anti-P09 bloc&#x27;s target prevailed, quietly serving Traitor interests. Saturday dinner&#x27;s marked plate went to P05, the game&#x27;s sharpest tracker of token flow, exactly as P01 and P10 had pre-planned; nobody else held an object to intervene, and the plate reached its intended target unchallenged. RT_4 then took P08, swept up in the same &quot;P08/P09/P10 alignment&quot; theory that had already cost P09, with P01 privately admitting he voted P08 &quot;to protect P10 without looking evasive.&quot; RT_5&#x27;s banishment of P11 is the arc&#x27;s sharpest irony: the Sunday Transmission had just produced multiple dead-player answers correctly flagging P10 as under-scrutinized, and P02 even voted P10 on that basis — but P01, P10, and a newly recruited P12 pushed a rival theory about P11 &quot;steering suspicion&quot; hard enough to override it, and the one player who&#x27;d spent the whole game resisting pile-ons was finally swallowed by one. Night 3 took P12 himself, the traitors&#x27; explicit &quot;sharpest analytical threat,&quot; and the finale banished P03 — a player whose reasoning log had gone conspicuously blank for several rounds running, a quietness the surviving Traitors weaponized as &quot;suspicious silence&quot; against a Faithful archetype whose whole identity was supposed to be careful record-keeping.</p>
+<p>Several moments repay a closer look. P01&#x27;s persona-as-camouflage is the game&#x27;s cleanest through-line: multiple Faithful players (P04, P08) explicitly clocked the repeated self-volunteering as &quot;performative vulnerability&quot; or &quot;weak play,&quot; and were right, and it never cost him anything, because the accusation kept dissolving into vaguer targets before it could crystallize into a vote. P06 shows the opposite lesson — the same loud, staked-out persona that&#x27;s an asset in early-game momentum-building became the tell that got him banished first among the three Traitors. P10&#x27;s persona was almost invisible by design, and the strategy worked: dead-player Transmission answers correctly named him twice as &quot;trusted too easily&quot; and &quot;weakest play,&quot; a near-perfect read from beyond the grave, and it still wasn&#x27;t enough to overcome the live-table narrative his partners built around P11. P02 is arguably the game&#x27;s most consequential Faithful player without ever knowing it: having anchored her trust to P11 early, she transferred that trust wholesale to P01 once he seemed transparent, and from RT_4 onward her votes tracked his suggestions almost exactly (&quot;I trust P01 completely and won&#x27;t vote against him&quot;), making her the social vehicle that let two Traitors coast to a majority at the end. And P10&#x27;s own Night 3 reasoning is quietly telling about how the Traitors read the table&#x27;s social fabric: killing P12 &quot;while P02 still provides cover by defending P01&quot; shows the Traitors recognizing and relying on a Faithful ally&#x27;s loyalty as an asset, functionally treating P02 as an extension of their own coalition.</p>
+<p>The Anchor token circulated constantly — P12 to P11, P11 to P01, P01 onward, P09, then P02 to P11 at the dinner table — but its passage read almost entirely as a trust signal rather than a mechanically loaded object; nothing in the reasoning suggests any Traitor discovered or exploited a hidden protective meaning behind it, and no murder appears to have been blocked by anchor possession. The rope/bloc mechanic surfaced once, in RT_3, splitting the table into two tethered sub-groups that each reached internal unanimity on different targets (P09 versus P01) before the pro-P09 bloc&#x27;s pick actually landed — a clean illustration of how bloc composition, not raw vote count, can decide an elimination when the traitors happen to sit in the larger faction. The Saturday dinner plate was pre-arranged by the two surviving Traitors and never contested; nobody else holding an object thought to swap it, and several Faithful players explicitly noted they had nothing to act on. The Sunday Transmission produced the game&#x27;s best piece of unclaimed intelligence — two independent dead-player answers naming P10 as undertrusted — but it never converted into a banishment, undercut by the very next round&#x27;s louder, fresher accusation against P11. Succession never triggered in this game; no offer or refusal of the role appears anywhere in the log. The finale, with P01, P10, and P02 as the last three standing, came down to a straightforward numbers read: P01 recognized the Traitors already held a 2-of-3 majority and moved to end the game immediately, while P02 — still fully invested in trusting P01 — wanted to spend one more round eliminating P10, unaware she was proposing to remove her own last ally.</p>
+<p>What this particular game illustrates, more than anything, is how thoroughly a well-worn social persona can substitute for hard evidence in a room full of genuinely careful analysts. The Faithful table tracked voting blocs, token movement, and behavioral inconsistency with real rigor throughout — P03, P05, P09, and P11 all produced correct or near-correct reads at various points — but that rigor kept attaching itself to the wrong targets because the two surviving Traitors&#x27; personas (performative self-sacrifice, low-profile silence) were built to be invisible to exactly that kind of pattern-matching, while a loyal Faithful ally&#x27;s misplaced trust in one of them did the rest of the work for free.</p>
+<h2>Game 1</h2>
+<p class="note">Winner: <strong>TRAITORS</strong> &middot; ended at Final 3 &middot; <a href="trace.html?batch=reasoning_2026-07-27&amp;game=1">every decision in this game &rarr;</a></p>
+<h3>Role layout</h3>
+<table>
+<thead><tr><th>Seat</th><th>Archetype</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td>P01</td><td>A06</td><td>FAITHFUL</td></tr>
+<tr><td>P02</td><td>A10</td><td>FAITHFUL</td></tr>
+<tr><td>P03</td><td>A02</td><td>TRAITOR</td></tr>
+<tr><td>P04</td><td>A11</td><td>FAITHFUL</td></tr>
+<tr><td>P05</td><td>A12</td><td>FAITHFUL</td></tr>
+<tr><td>P06</td><td>A09</td><td>FAITHFUL</td></tr>
+<tr><td>P07</td><td>A07</td><td>FAITHFUL</td></tr>
+<tr><td>P08</td><td>A03</td><td>FAITHFUL</td></tr>
+<tr><td>P09</td><td>A05</td><td>FAITHFUL</td></tr>
+<tr><td>P10</td><td>A08</td><td>TRAITOR</td></tr>
+<tr><td>P11</td><td>A01</td><td>FAITHFUL</td></tr>
+<tr><td>P12</td><td>A04</td><td>TRAITOR</td></tr>
+</tbody></table>
+<h3>Elimination timeline</h3>
+<table>
+<thead><tr><th>#</th><th>Player</th><th>Actual role</th><th>Cause</th><th>~Phase</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>P03 (A02)</td><td>TRAITOR</td><td>BANISHMENT</td><td>RT_1</td></tr>
+<tr><td>2</td><td>P07 (A07)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_2</td></tr>
+<tr><td>3</td><td>P09 (A05)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_3</td></tr>
+<tr><td>4</td><td>P05 (A12)</td><td>FAITHFUL</td><td>MURDER</td><td>SAT_DINNER</td></tr>
+<tr><td>5</td><td>P04 (A11)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_4</td></tr>
+<tr><td>6</td><td>P06 (A09)</td><td>FAITHFUL</td><td>BANISHMENT</td><td>RT_5</td></tr>
+<tr><td>7</td><td>P02 (A10)</td><td>FAITHFUL</td><td>MURDER</td><td>NIGHT_3</td></tr>
+<tr><td>8</td><td>P11 (A01)</td><td>FAITHFUL</td><td>MURDER</td><td>NIGHT_3</td></tr>
+<tr><td>9</td><td>P10 (A08)</td><td>TRAITOR</td><td>BANISHMENT</td><td>RT_6_FINALE</td></tr>
+</tbody></table>
+<p class="note">elimination phase and cause (MURDER vs BANISHMENT) are inferred, not read from an explicit referee event log — the persisted trace holds only per-decision reasoning. A murdered player&#x27;s phase comes from their own &#x27;will&#x27; entry (only murder victims write one); a banished player&#x27;s phase comes from their last entry tagged with a still-alive action (speak/vote/bloc/etc.), deliberately excluding &#x27;will_court&#x27; and &#x27;transmission_a&#x27; — the Court (all dead players) keeps generating those after death, so counting them would make every dead player look alive until the game ends. Exact vote tallies and who cast the deciding vote are not reconstructed this way; treat any such claim in the narrative as coming from an agent&#x27;s own reasoning text, not independently verified.</p>
+<h3>Survivors</h3>
+<table>
+<thead><tr><th>Seat</th><th>Archetype</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td>P01</td><td>A06</td><td>FAITHFUL</td></tr>
+<tr><td>P08</td><td>A03</td><td>FAITHFUL</td></tr>
+<tr><td>P12</td><td>A04</td><td>TRAITOR</td></tr>
+</tbody></table>
+<h3>Narrative</h3>
+<p># The Lodge: A Case Study in Comfortable Consensus</p>
+<p>## The Role Layout</p>
+<p>Twelve archetypes sat down at this table, and the game&#x27;s hidden hand dealt Traitor status to three of them: A02 (P03), A08 (P10), and A04 (P12) — a confident accuser, a warm trust-builder, and a coalition-oriented persona respectively. It&#x27;s a nicely balanced trio in terms of social utility: P03 was built to seed early suspicion, P10 to defend and deflect through affable trust, and P12 to blend into consensus and nudge it quietly. The nine Faithful ran the gamut from paranoid contrarians (A11&#x27;s P04, A05&#x27;s P09) to record-keeping analysts (A01&#x27;s P11, A06&#x27;s P01) to self-sacrificing peacemakers (A09&#x27;s P06). Notably, the two Faithful whose entire personas revolved around distrust and pattern-tracking — P04 and P11 — ended up doing much of the table&#x27;s analytical heavy lifting, and paid for it with elimination, while the town&#x27;s quietest, lowest-disclosure archetypes (P01&#x27;s A06 and P08&#x27;s A03) were still standing at the end. That&#x27;s not a coincidence the story lets slide.</p>
+<p>## The Arc of Eliminations</p>
+<p>The traitors&#x27; very first move set the tone for the whole game: P03 publicly accused P07 in round zero, then the Traitor trio unanimously murdered P07 that same night to &quot;keep the narrative consistent.&quot; But the town&#x27;s first banishment fell on P03 anyway — not through any read of the murder, but because P03 went suspiciously silent for two rounds running while everyone else was performing engagement. P11 called it the clearest &quot;concrete, verifiable&quot; pattern available, and the vote landed. It was a clean, almost accidental catch: the table killed a Traitor for the wrong reasons, rewarding quietness-as-tell rather than any real deduction about P07&#x27;s death.</p>
+<p>From there the story becomes a portrait of misdirected momentum. Round two&#x27;s target was P07 — already murdered the first night, but the town didn&#x27;t realize it and instead voted to banish based on &quot;deflection&quot; behavior that had actually been genuine self-defense from a dead man walking (the murder having presumably been announced by then, this reads as the table processing the killed P07 as a live suspect until his banishment formalized the loss — a telling artifact of how quickly suspicion patterns outlive the person). Round three claimed P09, again on a thin &quot;went silent, therefore guilty&quot; read that P01 and P05 both explicitly borrowed from the P03 elimination — the table had learned the wrong lesson and kept reapplying it.</p>
+<p>Saturday dinner brought the first clean Traitor-directed murder: P05, whose reads had actually been sound, was killed specifically because P10 and P12 needed to converge fast on a plate and did so around a name both had floated before. The kill exposed the traitors to zero risk since P05 left her final will pointing suspicion at P04 rather than at her actual killers. Round four&#x27;s banishment then took out P04 — the game&#x27;s most vocal skeptic — after a bloc vote where P04 fought hard against consensus, correctly distrusting &quot;comfortable&quot; agreement right up until it swallowed him. Round five claimed P06, condemned by two independent, eliminated-player transmission answers converging on the same name plus the &quot;self-volunteering&quot; pattern the traitors themselves had been quietly reinforcing for rounds. Night three then saw the Traitors kill twice in the same phase — P11, the table&#x27;s designated fact-tracker, and P02, a mild-mannered follower — clearing out the last analytically dangerous Faithful in one stroke. By the finale only P01, P08, P10, and P12 remained, and the town&#x27;s last vote fell on P10, not P12, leaving one Traitor (P12) alive at the buzzer alongside two Faithful.</p>
+<p>## Notable Reasoning Moments</p>
+<p>The most striking throughline is how thoroughly the &quot;silence equals guilt&quot; heuristic, discovered almost by luck against P03, metastasized into the town&#x27;s default logic and was repeatedly exploited — sometimes by the Traitors themselves, sometimes just by bad luck. P04 (A11, contrarian-by-design) is the game&#x27;s tragic figure: he explicitly names the mechanism eating the table — &quot;that consensus itself is suspicious to me,&quot; &quot;resist the comfortable... consensus&quot; — round after round, correctly diagnosing that quick agreement was suspicious, and he was right almost every time about the emerging bandwagon. But his persona&#x27;s compulsion to always oppose the room&#x27;s target eventually made him the room&#x27;s target; his own bloc-mates (P08, P01, P02) turned a shared &quot;P04 keeps deflecting&quot; read into the very consensus he&#x27;d warned against, and voted him out in round four. It&#x27;s persona-fidelity functioning as a fatal flaw: the archetype built to distrust groupthink couldn&#x27;t stop himself from becoming the next groupthink victim.</p>
+<p>P10 (A08) is the cleanest example of an archetype playing exactly to spec and profiting from it. Built to establish early trust and deflect via warmth, P10 spent the whole game defending P05 publicly, right up until helping murder her privately at Saturday dinner — and that betrayal was never traced back to him, since P05&#x27;s own will pointed elsewhere. His reasoning is a case study in disciplined blending: &quot;I need to steer suspicion away from P12 and myself. P01 has been evasive and just gave a blank response&quot; is a near-textbook example of exploiting an innocent player&#x27;s low-disclosure style as camouflage for a coordinated vote.</p>
+<p>P12&#x27;s blank vote reasoning entries (empty strings at several key junctures, including RT_1&#x27;s vote and the SAT_DINNER murder deliberation) are also worth flagging as a structural tell in the trace itself — moments where the Traitor coordination was presumably happening but the archetype&#x27;s actual stated reasoning simply didn&#x27;t surface, versus P10 who consistently articulated his manipulation. Whether that&#x27;s persona (A04 running quieter, more coalition-following logic) or noise in the log, the effect in-game was the same: P12 never drew scrutiny for it.</p>
+<p>The town&#x27;s biggest missed opportunity was the Sunday Transmission converging on P06 — two independent eliminated players (P07 and P09) both named P06 as either &quot;trusted too easily&quot; or someone they were &quot;wrong about,&quot; and the living table treated that convergence as near-conclusive, banishing an innocent, self-sacrificing Faithful the very next round. Nobody at the table seemed to weigh that dead players&#x27; information is explicitly unreliable &quot;noise,&quot; per the game&#x27;s own framing — the two answers agreeing was taken as signal when it may well have been coincidence or residual bandwagon momentum from P06&#x27;s habitual self-volunteering.</p>
+<p>## How Each Mechanic Actually Played</p>
+<p>The Anchor token surfaces early and then vanishes from the town&#x27;s active reasoning almost entirely — P09 passed it to P07 in round zero specifically &quot;to stir the pot,&quot; and it briefly became a suspicion magnet (P07&#x27;s shift from silence to accusation &quot;right after receiving the token&quot; was cited by multiple voters in round one), but once P07 was murdered/banished the token&#x27;s whereabouts became an open question that P01 and P11 kept flagging (&quot;the unresolved token whereabouts&quot;) without ever resolving it. No Traitor is shown discovering or exploiting the Anchor&#x27;s actual mechanical meaning in their reasoning; it functioned purely as a social artifact — a thing to be suspicious of — rather than a blocked-murder mechanic in this playthrough.</p>
+<p>The bloc/rope mechanic appears at RT_4, where P10 and P12&#x27;s tether-group (with P08 and P11 also present) reached a contested near-unanimous vote on P04 — P04 himself dissented and pushed for P06 instead, meaning the bloc did not reach clean unanimity internally before the town vote, though the majority carried it anyway. This is one of the few moments a Traitor (P10) is shown explicitly weaponizing bloc composition, steering his tether group&#x27;s collective suspicion toward P04 as a &quot;dangerous&quot; analytical threat.</p>
+<p>The Saturday dinner plate produced the game&#x27;s only murder with an explicit swap decision, and it wasn&#x27;t very dramatic: P10 and P12 needed two rounds of internal back-and-forth to converge on P05 (each initially favoring the name the other had proposed earlier), and once set, P10 explicitly declined to swap it — &quot;disrupting the arrangement now would raise suspicion.&quot; No Faithful player noticed or moved the plate; the mechanic passed without any counter-play from the table.</p>
+<p>The Sunday Transmission functioned exactly as a rumor engine should, for better and worse — Faithful askers tried to fish for hidden manipulation (&quot;who is being trusted too easily,&quot; &quot;who is being wrong about&quot;), and eliminated players&#x27; answers (genuinely honest, since none were Traitors among the respondents shown) converged hard on P06, directly causing his banishment the next round even though he was Faithful. It&#x27;s the mechanic&#x27;s clearest success at generating table-wide consensus and its clearest failure at generating a correct one. No Succession trigger appears anywhere in the trace — the Anchor holder was never killed in a way that forced a handoff — so that mechanic sat dormant this game.</p>
+<p>The finale came down to P01, P08, P10, and P12, with P12 privately noting he was &quot;the last hidden player&quot; and needing one more banishment to reach a 2v1 (or, as it played out, a favorable 2-1 split). The town&#x27;s last read — suspicion of the P10/P12 pairing &quot;consistently echoing and defending each other&quot; — was completely correct, but arrived one vote too late: the table voted out P10, not P12, and with P12 surviving alongside P01 and P08, the Traitors claimed the win at 3 players remaining.</p>
+<p>## Closing</p>
+<p>This game is a small parable about how quickly a social-deduction table can bootstrap a heuristic from one lucky correct catch (P03&#x27;s silence) into a load-bearing false idol that consumes the very players — the contrarian, the record-keeper — built to prevent exactly that failure mode. The Traitors here didn&#x27;t out-strategize the table so much as out-last it: P10 and P12 rode the Faithfuls&#x27; own pattern-matching instincts, sacrificing partners when needed (P03 early) and letting the town&#x27;s transmission-fueled consensus do the killing for them (P06), while never once needing to out-argue the table&#x27;s sharpest minds — those minds eliminated each other first.</p>
+<footer class="page">Generated by the Lodge simulation harness. Self-contained — no external assets.</footer>
+</div>
+</body>
+</html>

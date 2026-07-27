@@ -247,7 +247,7 @@ pre.code {
 <body>
 <header class="page"><div class="wrap">
   <h1>The Lodge — Trace viewer</h1>
-  <div class="meta">2 games across 1 batch &middot; every decision, with the reasoning behind it</div>
+  <div class="meta">4 games across 2 batches &middot; every decision, with the reasoning behind it</div>
 </div></header>
 <nav class="site"><div class="wrap"><a href="index.html">Reports</a><a href="charts.html">Charts</a><a href="params.html">Parameters</a><a href="trace.html" aria-current="page">Traces</a></div></nav>
 <div class="wrap">
@@ -263,7 +263,7 @@ during a run and is gone when the console summary prints. An agent saying it wil
 vote for someone is evidence it intended to, not proof it did.</p>
 </div>
 
-<div class="controls"><span class="label">Batch</span><select class="ctl" id="batch"><option value="0">2026-07-22 · Reasoning · 2 games · claude-sonnet-5</option></select><span class="label">Game</span><select class="ctl" id="game"></select></div>
+<div class="controls"><span class="label">Batch</span><select class="ctl" id="batch"><option value="0">2026-07-27 · Reasoning · 2 game(s) · claude-sonnet-5</option><option value="1">2026-07-22 · Reasoning · 2 games · claude-sonnet-5</option></select><span class="label">Game</span><select class="ctl" id="game"></select></div>
 <div class="controls"><select class="ctl" id="f-player"></select><select class="ctl" id="f-phase"></select><select class="ctl" id="f-tag"></select><input class="ctl" id="f-text" type="search" placeholder="search reasoning…" style="min-width:16rem"><button class="btn" id="f-clear">Clear filters</button></div>
 <div class="banner hidden" id="err"></div>
 <p class="counts" id="counts"></p>
@@ -292,7 +292,7 @@ function showError(id, err) {
 }
 
 
-const INDEX = {"batches": [{"id": "reasoning_2026-07-22", "label": "2026-07-22 \u00b7 Reasoning \u00b7 2 games \u00b7 claude-sonnet-5", "report": "reasoning_2026-07-22.html", "games": [{"game_id": 3, "winner": "TRAITORS", "final_alive": 3, "decisions": 189, "file": "data/traces/reasoning_2026-07-22/game_0003.json"}, {"game_id": 4, "winner": "TRAITORS", "final_alive": 3, "decisions": 181, "file": "data/traces/reasoning_2026-07-22/game_0004.json"}]}]};
+const INDEX = {"batches": [{"id": "reasoning_2026-07-27", "label": "2026-07-27 \u00b7 Reasoning \u00b7 2 game(s) \u00b7 claude-sonnet-5", "report": "reasoning_2026-07-27.html", "games": [{"game_id": 0, "winner": "TRAITORS", "final_alive": 3, "decisions": 182, "file": "data/traces/reasoning_2026-07-27/game_0000.json"}, {"game_id": 1, "winner": "TRAITORS", "final_alive": 3, "decisions": 196, "file": "data/traces/reasoning_2026-07-27/game_0001.json"}]}, {"id": "reasoning_2026-07-22", "label": "2026-07-22 \u00b7 Reasoning \u00b7 2 games \u00b7 claude-sonnet-5", "report": "reasoning_2026-07-22.html", "games": [{"game_id": 3, "winner": "TRAITORS", "final_alive": 3, "decisions": 189, "file": "data/traces/reasoning_2026-07-22/game_0003.json"}, {"game_id": 4, "winner": "TRAITORS", "final_alive": 3, "decisions": 181, "file": "data/traces/reasoning_2026-07-22/game_0004.json"}]}]};
 let entries = [];
 
 function esc(s) {
