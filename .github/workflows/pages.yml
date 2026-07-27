@@ -1,0 +1,49 @@
+name: Deploy reports to Pages
+
+# Publishes reports/ — and only reports/ — as the site. The repository's
+# Python, canon and traces are never uploaded.
+#
+# Called by structural.yml and reasoning.yml after they commit, rather than
+# triggered by the push itself: a push made with GITHUB_TOKEN does not start
+# another workflow, so a push-triggered deploy would silently never run.
+# workflow_dispatch is kept for redeploying the current reports/ by hand.
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload reports/ as the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: echo "Deployed ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"

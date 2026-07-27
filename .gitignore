@@ -3,3 +3,5 @@ __pycache__/
 .env
 traces/*.jsonl
 traces_mock/
+reports_mock/
+run.log
