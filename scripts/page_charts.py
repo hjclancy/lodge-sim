@@ -40,6 +40,17 @@ CHARTS = [
      "Where in the weekend players leave, and how. Murder and banishment are stacked "
      "because they are the only two ways out; the referee records both directly, so "
      "unlike the reasoning report's timeline nothing here is inferred."),
+    ("nomination", "Nomination accuracy by archetype (§17)",
+     "Share of a Faithful player's nominations that named an actual Traitor. Base rate is "
+     "25–33%: three Traitors among the rest of the table. An archetype below the base "
+     "rate is evidence of a defective parameter mapping in heuristic_bots.py, not of a "
+     "game property — canon §17 requires this to come back clean before the win split is "
+     "treated as a balance problem."),
+    ("ladder", "Tie ladder step distribution (§5.4)",
+     "Which step of the deterministic ladder resolved each tied ballot. RPS is gone; step "
+     "3 always resolves because nomination order is a strict total ordering. "
+     "SMALL_COUNT_TIE_FORCED is the only random elimination left and is reachable only "
+     "below 5 alive, where there is no nomination record to read."),
     ("plate", "Plate detection by archetype (§8.3)",
      "Detections per game. At this tier detection is a gated roll on the archetype's "
      "`object` parameter, not a reasoning trace — a deliberately different mechanism "
@@ -112,6 +123,84 @@ function drawElimination(d) {
         y: { stacked: true, ticks: { color: themeInk() }, grid: { color: gridColor() },
              beginAtZero: true,
              title: { display: true, text: 'eliminations per game', color: themeInk() } }
+      }
+    })
+  });
+}
+
+function drawNomination(d) {
+  const rows = d.nomination_accuracy || [];
+  // The 25–33% base-rate band is what makes this chart readable: a bar below
+  // it is a defective parameter mapping, not a finding about the game.
+  charts.nomination = new Chart(document.getElementById('c-nomination'), {
+    type: 'bar',
+    data: {
+      labels: rows.map(function (r) { return r.id; }),
+      datasets: [
+        { label: 'Nomination accuracy %',
+          data: rows.map(function (r) { return pct(r.pct); }),
+          backgroundColor: rows.map(function (r) {
+            return (r.pct !== null && r.pct < 25) ? PALETTE[3] : PALETTE[2];
+          }), order: 2 },
+        { label: 'Base rate (25%)', type: 'line',
+          data: rows.map(function () { return 25; }),
+          borderColor: PALETTE[4], borderDash: [5, 4], borderWidth: 2,
+          pointRadius: 0, fill: false, order: 1 },
+        { label: 'Base rate (33%)', type: 'line',
+          data: rows.map(function () { return 33; }),
+          borderColor: PALETTE[4], borderDash: [2, 3], borderWidth: 2,
+          pointRadius: 0, fill: false, order: 1 }
+      ]
+    },
+    options: baseOptions({
+      plugins: {
+        legend: { labels: { color: themeInk(), boxWidth: 12 } },
+        tooltip: { callbacks: {
+          title: function (items) {
+            const i = items[0].dataIndex;
+            return d.archetypes[i].id + ' ' + d.archetypes[i].name;
+          },
+          afterBody: function (items) {
+            const r = rows[items[0].dataIndex];
+            return r && r.n ? r.n.toLocaleString() + ' nominations' : '';
+          }
+        } }
+      },
+      scales: {
+        x: { ticks: { color: themeInk() }, grid: { display: false } },
+        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+             beginAtZero: true, suggestedMax: 60,
+             title: { display: true, text: '% naming a Traitor', color: themeInk() } }
+      }
+    })
+  });
+}
+
+function drawLadder(d) {
+  const rows = d.tie_ladder || [];
+  charts.ladder = new Chart(document.getElementById('c-ladder'), {
+    type: 'bar',
+    data: {
+      labels: rows.map(function (r) { return r.tag.replace('TIE_LADDER_', ''); }),
+      datasets: [{ label: 'Ties resolved',
+                   data: rows.map(function (r) { return r.count; }),
+                   backgroundColor: rows.map(function (r) {
+                     // The forced-random step is the one worth spotting.
+                     return r.tag === 'SMALL_COUNT_TIE_FORCED' ? PALETTE[3] : PALETTE[0];
+                   }) }]
+    },
+    options: baseOptions({
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { afterBody: function (items) {
+          const r = rows[items[0].dataIndex];
+          return r && r.pct !== null ? r.pct.toFixed(1) + '% of resolved ties' : '';
+        } } }
+      },
+      scales: {
+        x: { ticks: { color: themeInk() }, grid: { display: false } },
+        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+             beginAtZero: true }
       }
     })
   });
@@ -194,6 +283,8 @@ async function select(idx) {
     document.getElementById('charts').style.display = '';
     drawSurvival(d);
     drawElimination(d);
+    drawNomination(d);
+    drawLadder(d);
     drawPlate(d);
     drawFloats(d);
   } catch (e) {

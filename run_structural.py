@@ -22,6 +22,7 @@ import time
 from collections import Counter, defaultdict
 
 from referee import Referee, PHASES, TRAITOR, FAITHFUL
+from council_metrics import CouncilMetrics
 from heuristic_bots import HeuristicAgents
 from archetypes import (ALL_IDS, ARCHETYPES, PARAM_KEYS, PARAM_OVERRIDES,
                         PARAMS_DIGEST, params_snapshot, params_summary)
@@ -60,12 +61,10 @@ def run(n_games):
     elim_cause = defaultdict(Counter)    # phase -> {MURDER/BANISHMENT: n}
     elim_role = defaultdict(Counter)     # phase -> {TRAITOR/FAITHFUL: n}
 
-    rope_fired = 0
+    council = CouncilMetrics()      # §17 v4 metrics — see council_metrics.py
     anchor_live = []
     succession_trigger = 0
     succession_accept = 0
-    zero_vote_council = 0
-    zero_traitor_sweep = 0
 
     t0 = time.time()
     for g in range(n_games):
@@ -93,19 +92,14 @@ def run(n_games):
         for f in s.float_events:
             tag = f["tag"]
             floats[tag] += 1
-            if tag == "ZERO_VOTE_COUNCIL":
-                zero_vote_council += 1
-            elif tag == "SUCCESSION_ACCEPT":
+            if tag == "SUCCESSION_ACCEPT":
                 succession_accept += 1
         for a in s.adjudications:
             adjud[a["tag"]] += 1
-            if a["tag"] == "ZERO_TRAITORS_FAITHFUL_WIN":
-                zero_traitor_sweep += 1
         for il in s.illegal_actions:
             illegal[il["tag"]] += 1
 
-        if any(e.type == "ROPE_UP" for e in s.transcript):
-            rope_fired += 1
+        council.add_game(s)
         if s.anchor_live_councils is not None:
             anchor_live.append(s.anchor_live_councils)
         succession_trigger += len(s.metrics.get("succession_trigger", []))
@@ -151,9 +145,8 @@ def run(n_games):
         surv=surv, seen=seen, banished_while_faithful=banished_while_faithful,
         vote_acc=vote_acc, standing=standing, detects=detects, role_games=role_games,
         elim_cause=elim_cause, elim_role=elim_role, params=params_snapshot(),
-        rope_fired=rope_fired, anchor_live=anchor_live,
+        council=council, anchor_live=anchor_live,
         succession_trigger=succession_trigger, succession_accept=succession_accept,
-        zero_vote_council=zero_vote_council, zero_traitor_sweep=zero_traitor_sweep,
     )
 
 
@@ -170,6 +163,8 @@ def ci95(k, n):
 def render_report(r, out_path):
     n = r["n_games"]
     pct = lambda x: f"{100 * x / n:.1f}%"
+    cm = r["council"]
+    fmt_pct = lambda v: "-" if v is None else f"{v:.0f}%"
 
     traitor_wins = r["wins"].get("TRAITORS", 0)
     tw_p, tw_ci = ci95(traitor_wins, n)
@@ -185,7 +180,8 @@ def render_report(r, out_path):
         f'Faithful won {pct(r["wins"].get("FAITHFUL", 0))}. '
         f'The game most often ends at {max(r["endings"], key=r["endings"].get)} '
         f'({pct(max(r["endings"].values()))} of games). '
-        f'The rope raised in {pct(r["rope_fired"])} of games. '
+        f'The top nominee was banished in '
+        f'{cm.conversion_pct():.0f}% of slate councils. '
         f'{status_pill}'
         f'</div>'
     )
@@ -224,6 +220,40 @@ def render_report(r, out_path):
         [[k, f"{r['endings'].get(k,0):,}", pct(r["endings"].get(k, 0))] for k in order],
     ))
 
+    # -- banishment accuracy: §17 says run this before any balance change --
+    parts.append("<h2>Banishment accuracy as Faithful, per archetype</h2>")
+    parts.append(
+        '<div class="disclaimer"><strong>Read this before acting on the win split.</strong> '
+        'Base rate is 25&ndash;33%: three Traitors among nine to eleven other players. '
+        'An archetype <em>below</em> base rate is evidence of a defective parameter '
+        'mapping in heuristic_bots.py, not of a game property &mdash; a bot that votes '
+        'worse than chance is a bug in the model of that persona. Canon §17 requires this '
+        'diagnostic to come back clean before the Traitor/Faithful split (§15 item 5) is '
+        'treated as a balance problem.</div>')
+    rows = []
+    for a in ALL_IDS:
+        hits, tot = r["vote_acc"][a]
+        nom_hits, nom_tot = cm.nomination_accuracy[a]
+        rows.append([
+            f"{a} {ARCHETYPES[a]['name']}",
+            f"{100*hits/tot:.0f}%" if tot else "-",
+            f"{tot:,}",
+            f"{100*nom_hits/nom_tot:.0f}%" if nom_tot else "-",
+            f"{nom_tot:,}",
+        ])
+    parts.append(table(
+        ["Archetype", "Ballot accuracy", "Ballots cast", "Nomination accuracy",
+         "Nominations made"],
+        rows,
+        note=("Both columns count only Faithful actors, and both count a hit as landing on "
+              "a player whose role at end of game was Traitor &mdash; a Successor is "
+              "therefore counted a Traitor for the whole game, which at the measured "
+              "acceptance rate shifts these by well under a point. Ballot accuracy is now "
+              "measured against a two-name slate, so its base rate is structurally higher "
+              "than v3's: it is not comparable across canon versions. Nomination accuracy "
+              "is the one to compare against the 25–33% base rate."),
+    ))
+
     # -- archetype survival --
     parts.append("<h2>Archetype survival to end, by role</h2>")
     rows = []
@@ -232,19 +262,75 @@ def render_report(r, out_path):
         sf, st = r["seen"][a][FAITHFUL], r["seen"][a][TRAITOR]
         f_s = f"{100*r['surv'][a][FAITHFUL]/sf:.0f}%" if sf else "-"
         t_s = f"{100*r['surv'][a][TRAITOR]/st:.0f}%" if st else "-"
-        hits, tot = r["vote_acc"][a]
-        acc = f"{100*hits/tot:.0f}%" if tot else "-"
         bwf = r["banished_while_faithful"].get(a, 0)
         bwf_rate = f"{100*bwf/sf:.0f}%" if sf else "-"
-        rows.append([f"{a} {name}", f_s, t_s, acc, bwf_rate])
+        rows.append([f"{a} {name}", f_s, t_s, bwf_rate])
     parts.append(table(
-        ["Archetype", "Faithful survival", "Traitor survival", "Vote accuracy (as Faithful)",
-         "Banished while Faithful"],
+        ["Archetype", "Faithful survival", "Traitor survival", "Banished while Faithful"],
         rows,
-        note=("Vote accuracy = share of a Faithful player's votes that landed on a living "
-              "Traitor at the time. §5.2's known bias applies: this speech model discards "
-              "volume/interruption, so loud archetypes (A02, A07) are under-modelled and "
-              "quiet ones (A03, A10) are over-modelled."),
+        note=("§5.2's known bias applies: this speech model discards volume and "
+              "interruption, so loud archetypes (A02, A07) are under-modelled and quiet "
+              "ones (A03, A10) are over-modelled. v4's nomination round is a second, "
+              "structured speaking pass that forces every player to commit a public "
+              "position, which partially compensates — expect A03 and A10 to move on that "
+              "change alone."),
+    ))
+
+    # -- the nomination machinery (§5.3, new in v4) --
+    parts.append("<h2>Nomination, slate and drop (§5.3)</h2>")
+    conv = cm.conversion_pct()
+    drop = cm.dropped_traitor_pct()
+    rows = [
+        ["Councils that produced a slate", f"{cm.conversion[1]:,}",
+         f"{cm.conversion[1]/n:.2f}/game"],
+        ["Top nominee banished", f"{cm.conversion[0]:,}", fmt_pct(conv)],
+        ["Third nominee dropped", f"{cm.dropped[1]:,}", f"{cm.dropped[1]/n:.2f}/game"],
+        ["Dropped nominee was a Traitor", f"{cm.dropped[0]:,}", fmt_pct(drop)],
+        ["SLATE_TIE_EARLIEST", f"{cm.slate_tie_earliest:,}",
+         f"{cm.slate_tie_earliest/n:.2f}/game"],
+        ["SLATE_SOLE_NOMINEE", f"{cm.sole_nominee:,}", f"{cm.sole_nominee/n:.2f}/game"],
+        ["Defense speeches", f"{cm.defense_rounds:,}", f"{cm.defense_rounds/n:.2f}/game"],
+    ]
+    parts.append(table(
+        ["", "Count", "Rate"], rows,
+        note=("Conversion is how often the most-nominated player is the one banished — how "
+              "much the nomination round actually decides. The dropped-nominee row is the "
+              "cost of the drop: every Traitor in that count was named by the table and "
+              "removed from the ballot before anyone could vote on them. Sole-nominee "
+              "banishments count as conversions by definition; there is no ballot."),
+    ))
+
+    # -- tie ladder (§5.4) --
+    parts.append("<h2>Tie ladder (§5.4)</h2>")
+    ladder = cm.tie_ladder_rows()
+    total_ties = sum(c for _t, c, _p in ladder)
+    if total_ties:
+        parts.append(table(
+            ["Step", "Ties resolved", "Share of ties", "Rate"],
+            [[tag, f"{count:,}", fmt_pct(share), f"{count/n:.2f}/game"]
+             for tag, count, share in ladder],
+            note=("RPS is gone. Steps 1–3 are deterministic and step 3 always resolves, "
+                  "because nomination order is a strict total ordering over nominees. "
+                  "SMALL_COUNT_TIE_FORCED is the only random elimination left in the "
+                  "ruleset and is reachable only below 5 alive, where there is no "
+                  "nomination record for steps 2 and 3 to read."),
+        ))
+    else:
+        parts.append("<p>No tied ballots.</p>")
+
+    # -- bloc voting (§5.5) --
+    parts.append("<h2>Bloc voting (§5.5)</h2>")
+    parts.append(table(
+        ["", "Count", "Rate"],
+        [["BLOC_BACKSTOP_APPLIED", f"{cm.bloc_backstop:,}", f"{cm.bloc_backstop/n:.2f}/game"],
+         ["BLOC_FORCED_BY_MEMBERSHIP", f"{cm.bloc_forced:,}", f"{cm.bloc_forced/n:.2f}/game"],
+         ["BLOC_ABSTAINS_BOTH_FINALISTS", f"{cm.bloc_abstain:,}",
+          f"{cm.bloc_abstain/n:.2f}/game"]],
+        note=("The backstop is how often a bloc failed to reach unanimity in three rounds "
+              "and was carried by its longest-standing member. It replaces v3's "
+              "ZERO_VOTE_COUNCIL, which lost the vote entirely; a bloc can no longer cast "
+              "nothing. BLOC_VOTE_NON_UNANIMOUS is retained in the illegal-action table "
+              "as the matching diagnostic and no longer implies a lost vote."),
     ))
 
     # -- standing_wins --
@@ -276,15 +362,33 @@ def render_report(r, out_path):
 
     # -- float events --
     parts.append("<h2>Float events</h2>")
-    float_order = ["ANCHOR_BREAK", "SUCCESSION_ACCEPT", "ZERO_VOTE_COUNCIL"]
+    float_order = ["ANCHOR_BREAK", "SUCCESSION_ACCEPT", "TRAITOR_SWEEP", "SWEEP_NO_MURDER"]
     rows = [[k, f"{r['floats'].get(k,0):,}", pct(r["floats"].get(k, 0))] for k in float_order]
-    rows.append(["Zero-Traitor sweep (§9.7)", f"{r['zero_traitor_sweep']:,}", pct(r["zero_traitor_sweep"])])
-    parts.append(table(["Event", "Games", "Rate"], rows))
+    parts.append(table(["Event", "Games", "Rate"], rows,
+                       note=("ZERO_VOTE_COUNCIL is absent because v4 removed it from the "
+                             "ruleset (§5.5); any occurrence would be an implementation "
+                             "defect and run_skeleton.check asserts its count is zero.")))
 
-    # -- rope + anchor --
-    parts.append("<h2>Rope and Anchor</h2>")
-    rows = [["Rope raised", f"{r['rope_fired']:,}", pct(r["rope_fired"])]]
-    parts.append(table(["Mechanic", "Games", "Rate"], rows))
+    # -- sweep (§9.7) --
+    parts.append("<h2>Traitor sweep (§9.7)</h2>")
+    mean_after = cm.mean_councils_after_sweep()
+    parts.append(table(
+        ["", "Games", "Rate"],
+        [["Swept to zero living Traitors", f"{cm.sweep_games:,}", pct(cm.sweep_games)],
+         ["Murder windows voided by the sweep", f"{r['floats'].get('SWEEP_NO_MURDER', 0):,}",
+          f"{r['floats'].get('SWEEP_NO_MURDER', 0)/n:.2f}/game"]],
+        note=(("Mean councils played after the sweep: "
+               f"{mean_after:.2f}." if mean_after is not None else
+               "No game recorded a sweep.")
+              + " The game no longer ends at the sweep (v4 §9.7): play continues to RT_6, "
+                "every later murder window produces no victim, and the Faithful win is "
+                "declared at the finale reveal. The oversized finale that produces is the "
+                "intended outcome of the branch, not drift — FINALE_OVERSIZED is "
+                "suppressed for these games."),
+    ))
+
+    # -- anchor --
+    parts.append("<h2>Anchor</h2>")
     if r["anchor_live"]:
         avg = sum(r["anchor_live"]) / len(r["anchor_live"])
         hist = Counter(r["anchor_live"])
@@ -465,12 +569,11 @@ def report_data(r):
         ],
         "float_events": (
             [{"tag": t, "games": r["floats"].get(t, 0), "pct": 100.0 * r["floats"].get(t, 0) / n}
-             for t in ("ANCHOR_BREAK", "SUCCESSION_ACCEPT", "ZERO_VOTE_COUNCIL")]
-            + [{"tag": "ZERO_TRAITOR_SWEEP", "games": r["zero_traitor_sweep"],
-                "pct": 100.0 * r["zero_traitor_sweep"] / n},
-               {"tag": "ROPE_RAISED", "games": r["rope_fired"],
-                "pct": 100.0 * r["rope_fired"] / n}]
+             for t in ("ANCHOR_BREAK", "SUCCESSION_ACCEPT", "TRAITOR_SWEEP",
+                       "SWEEP_NO_MURDER")]
         ),
+        # §17 v4 series — nomination accuracy, tie ladder, conversion, sweep.
+        **r["council"].as_data(ALL_IDS, {a: ARCHETYPES[a]["name"] for a in ALL_IDS}),
         "standing_wins": [{"id": a, "count": r["standing"].get(a, 0)} for a in ALL_IDS],
         "adjudications": [{"tag": k, "count": v, "per_game": v / n}
                           for k, v in r["adjud"].most_common()],

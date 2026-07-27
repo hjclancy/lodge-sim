@@ -43,7 +43,8 @@ COLUMNS = [
     ("params_summary", "Params", "text"),
     ("traitor_win_pct", "Traitor win", "pct"),
     ("final_2_pct", "Final 2", "pct"),
-    ("rope_pct", "Rope raised", "pct"),
+    ("sweep_pct", "Swept", "pct"),
+    ("nomination_conversion_pct", "Top nominee banished", "pct"),
     ("bloc_non_unanimous_per_game", "Bloc non-unanimous /game", "num2"),
     ("plate_detect_per_game", "Plate detect /game", "num2"),
     ("invariant_violations", "Invariants", "int"),
@@ -53,7 +54,8 @@ COLUMNS = [
 # Everything persisted on a row, whether or not it gets a column.
 METRIC_KEYS = [
     "traitor_win_pct", "faithful_win_pct", "final_2_pct", "final_3_pct",
-    "final_4plus_pct", "rope_pct", "anchor_break_pct", "zero_vote_council_pct",
+    "final_4plus_pct", "sweep_pct", "anchor_break_pct",
+    "nomination_conversion_pct", "nomination_accuracy_pct", "dropped_traitor_pct",
     "bloc_non_unanimous_per_game", "plate_detections", "plate_detect_per_game",
     "succession_trigger_pct", "succession_accept_pct", "invariant_violations",
 ]

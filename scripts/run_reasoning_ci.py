@@ -48,6 +48,7 @@ from run_skeleton import check
 from run_agents import assignment_for, load_rules
 from agents_claude import ClaudeAgents
 from archetypes import ALL_IDS, ARCHETYPES, PARAM_OVERRIDES, params_snapshot, params_summary
+from council_metrics import CouncilMetrics
 from llm import LLM, MockLLM
 import publish_traces
 import run_reasoning_report as rr
@@ -124,9 +125,9 @@ def play_batch(llm, games, out_dir, start=0):
     played = []
     agg = dict(
         wins=Counter(), endings=Counter(), floats=Counter(), adjud=Counter(),
-        illegal=Counter(), violations=Counter(), rope_fired=0,
+        illegal=Counter(), violations=Counter(),
         succession_trigger=0, succession_accept=0, plate_detections=0,
-        zero_traitor_sweep=0,
+        council=CouncilMetrics(),
         # Same shapes run_structural collects, so the dashboard can chart a
         # Sonnet batch and a heuristic batch with one set of drawing code.
         surv=defaultdict(Counter), seen=defaultdict(Counter),
@@ -169,12 +170,9 @@ def play_batch(llm, games, out_dir, start=0):
                 agg["succession_accept"] += 1
         for a in s.adjudications:
             agg["adjud"][a["tag"]] += 1
-            if a["tag"] == "ZERO_TRAITORS_FAITHFUL_WIN":
-                agg["zero_traitor_sweep"] += 1
         for i in s.illegal_actions:
             agg["illegal"][i["tag"]] += 1
-        if any(e.type == "ROPE_UP" for e in s.transcript):
-            agg["rope_fired"] += 1
+        agg["council"].add_game(s)
         agg["succession_trigger"] += len(s.metrics.get("succession_trigger", []))
 
         traitor_ids = {p.pid for p in s.players.values() if p.role == TRAITOR}
@@ -259,9 +257,9 @@ def metrics_from(agg, n):
         "final_2_pct": pct(agg["endings"].get("Final 2", 0)),
         "final_3_pct": pct(agg["endings"].get("Final 3", 0)),
         "final_4plus_pct": pct(agg["endings"].get("Final 4+", 0)),
-        "rope_pct": pct(agg["rope_fired"]),
         "anchor_break_pct": pct(agg["floats"].get("ANCHOR_BREAK", 0)),
-        "zero_vote_council_pct": pct(agg["floats"].get("ZERO_VOTE_COUNCIL", 0)),
+        "sweep_pct": pct(agg["council"].sweep_games),
+        "nomination_conversion_pct": agg["council"].conversion_pct(),
         "bloc_non_unanimous_per_game": agg["illegal"].get("BLOC_VOTE_NON_UNANIMOUS", 0) / n,
         "plate_detections": agg["plate_detections"],
         "plate_detect_per_game": agg["plate_detections"] / n,
@@ -317,12 +315,11 @@ def report_data(agg, n, model, elapsed_s):
         "float_events": (
             [{"tag": t, "games": agg["floats"].get(t, 0),
               "pct": 100.0 * agg["floats"].get(t, 0) / n}
-             for t in ("ANCHOR_BREAK", "SUCCESSION_ACCEPT", "ZERO_VOTE_COUNCIL")]
-            + [{"tag": "ZERO_TRAITOR_SWEEP", "games": agg["zero_traitor_sweep"],
-                "pct": 100.0 * agg["zero_traitor_sweep"] / n},
-               {"tag": "ROPE_RAISED", "games": agg["rope_fired"],
-                "pct": 100.0 * agg["rope_fired"] / n}]
+             for t in ("ANCHOR_BREAK", "SUCCESSION_ACCEPT", "TRAITOR_SWEEP",
+                       "SWEEP_NO_MURDER")]
         ),
+        # §17 v4 series — same accumulator the structural report uses.
+        **agg["council"].as_data(ALL_IDS, {a: ARCHETYPES[a]["name"] for a in ALL_IDS}),
         "standing_wins": [{"id": a, "count": agg["standing"].get(a, 0)} for a in ALL_IDS],
         "adjudications": [{"tag": k, "count": v, "per_game": v / n}
                           for k, v in agg["adjud"].most_common()],

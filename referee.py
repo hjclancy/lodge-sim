@@ -1,9 +1,24 @@
 """
 The Lodge — referee engine.
-Implements REFEREE CANON v2. The referee decides; agents only choose.
+Implements REFEREE CANON v4. The referee decides; agents only choose.
 
 Every agent return value is validated here before it touches state.
 Nothing in this file may be overridden by an agent.
+
+v4 changes (see referee_canon_v4.md §0):
+  1. Councils gain a nomination round and a defense round; the ballot is
+     restricted to two finalists (§5.1, §5.3).
+  2. RPS is deleted. Ties resolve on a deterministic ladder (§5.4).
+  3. Blocs vote from the slate and can never cast nothing (§5.5).
+  4. Succession acceptance owes a make-up elimination at NIGHT_3 (§9.6).
+  5. A zero-Traitor sweep no longer ends the game (§9.7).
+
+Note on a convention this file keeps: §1 specifies reject → log → re-prompt
+once → coerce. This engine has always coerced on the first invalid response
+rather than re-prompting, in every phase. v4 does not change that; the new
+nomination and defense paths follow the same convention as the old vote and
+murder paths so the ILLEGAL_ACTION frequency table stays comparable across
+versions. Re-prompting is a separate change to make everywhere at once.
 """
 
 from dataclasses import dataclass, field
@@ -21,6 +36,17 @@ PHASES = [
 
 ANCHOR_PASS_COUNCILS = {"RT_0", "RT_1", "RT_2", "RT_3"}
 MURDER_WINDOWS = {"NIGHT_1", "SAT_DINNER", "NIGHT_3"}
+
+# §5.3.1 — the nomination round runs at these councils and only when
+# alive >= 5. RT_0 has no vote at all; RT_6 is exempt by name (§5.3.5) so
+# that drift can never introduce a nomination round into the finale.
+NOMINATION_COUNCILS = {"RT_1", "RT_2", "RT_3", "RT_4", "RT_5"}
+NOMINATION_MIN_ALIVE = 5
+
+# §5.4 — the small-count ladder is step 1 repeated. After this many failed
+# revotes the tie resolves at random. This is the only random elimination
+# left in the ruleset and is reachable only below NOMINATION_MIN_ALIVE.
+SMALL_COUNT_REVOTES = 3
 
 PLATE_SET = (["ice_axes"] * 3 + ["knotted_rope"] * 3 + ["signal_flags"] * 3
              + ["storm_lantern"] * 2 + ["cairn"])
@@ -62,7 +88,7 @@ class Event:
 class GameState:
     game_id: int
     seed: int
-    rules_version: str = "canon_v2"
+    rules_version: str = "canon_v4"
     phase: str = "SETUP"
     players: dict = field(default_factory=dict)
     transcript: list = field(default_factory=list)
@@ -80,7 +106,25 @@ class GameState:
     rope_span_council: Optional[str] = None
     blocs: dict = field(default_factory=dict)  # bloc_id -> [pid]
 
-    makeup_owed: bool = False
+    # Make-up eliminations owed at NIGHT_3 (§3.3, §8.4). Two independent
+    # debts as of v4 — the Anchor's block and a Succession acceptance can
+    # both be outstanding in the same game.
+    anchor_makeup_owed: bool = False
+    succession_makeup_owed: bool = False
+
+    # §9.7 — set when living Traitors hit zero. The game does NOT end; every
+    # later murder window produces no victim and the Faithful win is declared
+    # at the finale reveal.
+    sweep_active: bool = False
+
+    # §5.3 — the current council's nomination round. Reset at the top of
+    # every council. {nominator: (nominee, order_index)}; order_index is the
+    # tiebreak resource for §5.3.2 and §5.4. The durable public record lives
+    # in the transcript as NOMINATION events (§13.1).
+    nominations: dict = field(default_factory=dict)
+    slate: list = field(default_factory=list)          # the 2 finalists
+    dropped_nominee: Optional[str] = None              # the named third
+
     first_successful_murder_done: bool = False
     successor_created: bool = False
 
@@ -232,7 +276,7 @@ class Referee:
             return False
         s.anchor_broken = True
         s.anchor_in_play = False
-        s.makeup_owed = True
+        s.anchor_makeup_owed = True
         s.float_event("ANCHOR_BREAK", f"blocked murder of {victim_pid}")
         s.log("ANCHOR_BLOCK", {"pid": victim_pid}, visible_to="TRAITORS")
         s.metric("anchor_block", 1)
@@ -318,9 +362,14 @@ class Referee:
 
     # ---------------- councils ----------------
     def council(self, name, voting=True):
+        """§5.1 — prompt, discussion, nomination, slate, defense, vote,
+        banishment, Anchor pass."""
         s = self.state
         s.phase = name
         s.councils_held += 1
+        s.nominations = {}
+        s.slate = []
+        s.dropped_nominee = None
 
         prompt = self.agents.council_prompt(s)
         s.log("COUNCIL_PROMPT", {"prompt": prompt})
@@ -335,10 +384,24 @@ class Referee:
         banished = None
         if voting:
             roped_here = s.rope_active and s.rope_span_council == name
-            if roped_here:
-                banished = self.bloc_vote()
+            if name in NOMINATION_COUNCILS and s.n_alive() >= NOMINATION_MIN_ALIVE:
+                self.nomination_round()
+                sole = self.resolve_slate()
+                if sole is not None:
+                    # §5.3.2 — unanimous nomination banishes with no defense
+                    # and no ballot. Cannot produce count drift.
+                    banished = sole
+                else:
+                    self.defense_round()
+                    banished = (self.bloc_vote(s.slate) if roped_here
+                                else self.standard_vote(s.slate))
             else:
-                banished = self.standard_vote()
+                # §5.3.5 small-count exemption. RT_0 never reaches here
+                # (voting=False) and RT_6 runs through finale().
+                s.adjudicate("NOMINATION_EXEMPT_SMALL_COUNT",
+                             f"{s.n_alive()} alive at {name}")
+                banished = (self.bloc_vote(None) if roped_here
+                            else self.standard_vote(None))
             if banished:
                 self.eliminate(banished, "BANISHMENT")
 
@@ -355,26 +418,152 @@ class Referee:
 
         return banished
 
-    def standard_vote(self):
+    # ---------------- nomination, slate, defense (§5.3) ----------------
+    def nomination_round(self):
+        """§5.3.1. Sequential and spoken, in a per-council randomized order
+        that is logged. Every living player names exactly one other living
+        player, seeing every nomination made before theirs."""
+        s = self.state
+        order = s.living_ids()[:]
+        self.rng.shuffle(order)
+        s.log("NOMINATION_ORDER", {"order": list(order)})
+
+        # Assigned before the loop, not after: agents read prior nominations
+        # off this dict during the round, and the round is sequential
+        # precisely so that they can.
+        record = {}
+        s.nominations = record
+
+        for idx, pid in enumerate(order):
+            legal = [x for x in s.living_ids() if x != pid]
+            if not legal:
+                s.adjudicate("NO_LEGAL_NOMINEE", pid)
+                continue
+            pick = self.agents.nominate(s, pid, legal)
+            if pick == pid:
+                s.illegal("SELF_NOMINATE", actor=pid)
+                pick = self.rng.choice(legal)
+            elif pick not in legal:
+                if pick is None:
+                    s.illegal("ABSTENTION", actor=pid)
+                elif pick in s.players and not s.players[pick].alive:
+                    s.illegal("DEAD_NOMINATE", actor=pid, detail=str(pick))
+                else:
+                    s.illegal("MALFORMED_OUTPUT", actor=pid, detail=f"nominate {pick}")
+                pick = self.rng.choice(legal)
+            record[pid] = (pick, idx)
+            # Public and durable (§13.1) — who named whom, in what order.
+            s.log("NOMINATION", {"nominee": pick, "order": idx}, actor=pid)
+
+    def _nomination_stats(self):
+        """-> (counts, earliest). `earliest[n]` is the order index of the
+        first player to name n, which is a strict total order over nominees:
+        each nominator names exactly one, so no two nominees can share it.
+        That is what makes §5.4 step 3 always resolve."""
+        counts, earliest = {}, {}
+        for _nominator, (nominee, idx) in self.state.nominations.items():
+            counts[nominee] = counts.get(nominee, 0) + 1
+            if nominee not in earliest or idx < earliest[nominee]:
+                earliest[nominee] = idx
+        return counts, earliest
+
+    def resolve_slate(self):
+        """§5.3.2. Sets state.slate to the 2 finalists and returns None, or
+        returns a player id to banish immediately (sole-nominee case)."""
+        s = self.state
+        counts, earliest = self._nomination_stats()
+        if not counts:
+            s.adjudicate("NO_NOMINATIONS_RECORDED")
+            s.slate = []
+            return None
+
+        # Ties for any position resolve to the earliest-nominated player.
+        ranked = sorted(counts, key=lambda n: (-counts[n], earliest[n]))
+
+        if len(ranked) == 1:
+            sole = ranked[0]
+            s.adjudicate("SLATE_SOLE_NOMINEE", f"{sole} named by every player")
+            s.log("SLATE_SOLE_NOMINEE", {"pid": sole, "nominations": counts[sole]})
+            s.metric("slate_sole_nominee", 1)
+            s.slate = [sole]
+            return sole
+
+        if len(ranked) == 2:
+            s.slate = ranked[:2]
+            s.adjudicate("SLATE_ONLY_TWO", "no drop occurred")
+            s.log("SLATE_SET", {"finalists": list(s.slate), "dropped": None,
+                                "counts": {k: counts[k] for k in ranked[:2]}})
+            return None
+
+        provisional = ranked[:3]
+        dropped = provisional[2]
+        # The tie only matters where it changes the slate or the drop: at the
+        # 2/3 boundary (who is dropped) or the 3/4 boundary (who is in).
+        contested = (counts[dropped] == counts[provisional[1]]
+                     or (len(ranked) > 3 and counts[dropped] == counts[ranked[3]]))
+        if contested:
+            s.adjudicate("SLATE_TIE_EARLIEST",
+                         f"{dropped} dropped on earliest-nomination order")
+            s.metric("slate_tie_earliest", 1)
+
+        s.dropped_nominee = dropped
+        s.slate = provisional[:2]
+        # Named aloud before removal (§5.3.2). Role is deliberately absent:
+        # this event is visible to everyone and being dropped reveals nothing.
+        s.log("SLATE_DROP", {"pid": dropped, "nominations": counts[dropped]})
+        s.log("SLATE_SET", {"finalists": list(s.slate), "dropped": dropped,
+                            "counts": {k: counts[k] for k in provisional}})
+        return None
+
+    def defense_round(self):
+        """§5.3.3. The two finalists speak once each, earlier-nominated first."""
+        s = self.state
+        _counts, earliest = self._nomination_stats()
+        for pid in sorted(s.slate, key=lambda p: earliest.get(p, 10 ** 6)):
+            text = self.agents.defend(s, pid)
+            s.log("DEFENSE", {"text": text}, actor=pid)
+
+    def _cast_ballot(self, pid, legal, slate_mode, context=""):
+        """One validated ballot. `legal` already excludes the voter, so a
+        finalist voting under a slate has exactly one legal choice: the other
+        finalist. They therefore cancel and the rest of the table decides."""
+        s = self.state
+        choice = self.agents.vote(s, pid, legal)
+        if choice == pid:
+            s.illegal("SELF_VOTE", actor=pid, detail=context)
+        elif choice not in legal:
+            if choice is None:
+                s.illegal("ABSTENTION", actor=pid, detail=context)
+            elif choice in s.players and not s.players[choice].alive:
+                s.illegal("DEAD_VOTE", actor=pid, detail=str(choice))
+            elif slate_mode:
+                s.illegal("VOTE_OFF_SLATE", actor=pid, detail=str(choice))
+            else:
+                s.illegal("MALFORMED_OUTPUT", actor=pid, detail=str(choice))
+        else:
+            return choice
+        return self.rng.choice(legal)
+
+    def standard_vote(self, targets=None):
+        """§5.3.4. `targets` is the slate when one exists; None means the
+        small-count exemption (§5.3.5) and every living player is a legal
+        target."""
         s = self.state
         voters = s.living_ids()
+        pool = list(targets) if targets else voters
         ballots = {}
         for pid in voters:
-            legal = [x for x in voters if x != pid]
-            choice = self.agents.vote(s, pid, legal)
-            if choice == pid:
-                s.illegal("SELF_VOTE", actor=pid)
-                choice = self.rng.choice(legal)
-            elif choice not in legal:
-                s.illegal("ABSTENTION" if choice is None else "DEAD_VOTE",
-                          actor=pid, detail=str(choice))
-                choice = self.rng.choice(legal)
-            ballots[pid] = choice
-        s.log("VOTE_REVEAL", {"ballots": dict(ballots)})
-        return self.resolve_plurality(ballots, voters)
+            legal = [x for x in pool if x != pid]
+            if not legal:
+                s.adjudicate("NO_LEGAL_VOTE_TARGET", pid)
+                continue
+            ballots[pid] = self._cast_ballot(pid, legal, targets is not None)
+        s.log("VOTE_REVEAL", {"ballots": dict(ballots),
+                              "slate": list(targets) if targets else None})
+        return self.resolve_vote(ballots, voters, targets)
 
-    def resolve_plurality(self, ballots, voters):
-        """§5.3–5.4. Plurality, then revote excluding tied, then RPS."""
+    def resolve_vote(self, ballots, voters, targets):
+        """Plurality of the cast ballots, then §5.4's ladder."""
         s = self.state
         tally = {}
         for v in ballots.values():
@@ -383,101 +572,213 @@ class Referee:
             return None
         top = max(tally.values())
         tied = [k for k, v in tally.items() if v == top]
-
         if len(tied) == 1:
             return tied[0]
 
-        if len(tied) > 2:
-            s.adjudicate("THREE_WAY_TIE", f"{len(tied)} tied")
+        if targets is not None:
+            if len(tied) > 2:
+                # Structurally impossible on a two-name ballot. If this ever
+                # fires the slate leaked; §17 asserts the count is zero.
+                s.adjudicate("THREE_WAY_TIE", f"{len(tied)} tied on a slate ballot")
+            return self._slate_tie_ladder(tied, voters)
+        return self._small_count_tie(tied, voters)
 
-        # revote: tied players excluded from voting, all others must pick one
-        revoters = [p for p in voters if p not in tied]
-        rb = {}
-        for pid in revoters:
-            choice = self.agents.vote(s, pid, tied)
-            if choice not in tied:
-                s.illegal("MALFORMED_OUTPUT", actor=pid, detail="revote")
-                choice = self.rng.choice(tied)
-            rb[pid] = choice
-        s.log("REVOTE_REVEAL", {"ballots": dict(rb), "candidates": tied})
+    def _slate_tie_ladder(self, tied, voters):
+        """§5.4. Stop at the first step that breaks the tie. Step 3 always
+        resolves, so this never returns None and never rolls a die."""
+        s = self.state
 
-        t2 = {}
-        for v in rb.values():
-            t2[v] = t2.get(v, 0) + 1
-        if t2:
+        # Step 1 — second discussion round (everyone but the finalists), then
+        # a revote. Skipped at a roped council: there is no individual ballot
+        # to re-cast without dissolving the blocs, and steps 2 and 3 resolve
+        # deterministically anyway.
+        roped_here = s.rope_active and s.rope_span_council == s.phase
+        if not roped_here:
+            for pid in [p for p in voters if p not in tied]:
+                s.log("SPEAK", {"text": self.agents.speak(s, pid),
+                                "context": "tie_break"}, actor=pid)
+            rb = {}
+            for pid in voters:
+                legal = [x for x in tied if x != pid]
+                if not legal:
+                    continue
+                rb[pid] = self._cast_ballot(pid, legal, True, context="revote")
+            s.log("REVOTE_REVEAL", {"ballots": dict(rb), "candidates": list(tied)})
+            t2 = {}
+            for v in rb.values():
+                t2[v] = t2.get(v, 0) + 1
+            if t2:
+                top2 = max(t2.values())
+                tied2 = [k for k, v in t2.items() if v == top2]
+                if len(tied2) == 1:
+                    s.adjudicate("TIE_LADDER_STEP_1", "revote after discussion")
+                    s.metric("tie_ladder_step", 1)
+                    return tied2[0]
+
+        counts, earliest = self._nomination_stats()
+
+        # Step 2 — higher nomination count carries.
+        by_count = sorted(tied, key=lambda p: -counts.get(p, 0))
+        if counts.get(by_count[0], 0) != counts.get(by_count[1], 0):
+            s.adjudicate("TIE_LADDER_STEP_2",
+                         f"{by_count[0]} had more nominations")
+            s.metric("tie_ladder_step", 2)
+            return by_count[0]
+
+        # Step 3 — earliest nomination carries. Always resolves.
+        by_early = sorted(tied, key=lambda p: earliest.get(p, 10 ** 6))
+        s.adjudicate("TIE_LADDER_STEP_3", f"{by_early[0]} nominated earliest")
+        s.metric("tie_ladder_step", 3)
+        return by_early[0]
+
+    def _small_count_tie(self, tied, voters):
+        """§5.4 under the small-count exemption: no nomination record, so the
+        ladder collapses to step 1 repeated. After three revotes, resolve at
+        random — the only random elimination left in the ruleset."""
+        s = self.state
+        for _attempt in range(SMALL_COUNT_REVOTES):
+            for pid in [p for p in voters if p not in tied]:
+                s.log("SPEAK", {"text": self.agents.speak(s, pid),
+                                "context": "tie_break"}, actor=pid)
+            rb = {}
+            for pid in voters:
+                legal = [x for x in tied if x != pid]
+                if not legal:
+                    continue
+                rb[pid] = self._cast_ballot(pid, legal, True, context="revote")
+            s.log("REVOTE_REVEAL", {"ballots": dict(rb), "candidates": list(tied)})
+            t2 = {}
+            for v in rb.values():
+                t2[v] = t2.get(v, 0) + 1
+            if not t2:
+                break
             top2 = max(t2.values())
             tied2 = [k for k, v in t2.items() if v == top2]
             if len(tied2) == 1:
+                s.adjudicate("TIE_LADDER_STEP_1", "small-count revote")
+                s.metric("tie_ladder_step", 1)
                 return tied2[0]
             tied = tied2
-
         winner = self.rng.choice(tied)
-        s.log("RPS_RESOLUTION", {"candidates": tied, "result": winner})
-        s.metric("rps_resolution", 1)
+        s.adjudicate("SMALL_COUNT_TIE_FORCED",
+                     f"{len(tied)} tied after {SMALL_COUNT_REVOTES} revotes")
+        s.metric("small_count_tie_forced", 1)
+        s.log("SMALL_COUNT_TIE_FORCED", {"candidates": list(tied), "result": winner})
         return winner
 
-    def bloc_vote(self):
-        """§5.5. Three blocs, one vote each, unanimous or nothing.
+    def _bloc_backstop(self, bid, members, rounds):
+        """§5.5. Reuses §8.2's longest-standing procedure: the member who
+        named their pick first and never moved off it carries the bloc. Ties
+        in standing resolve to the earlier-speaking member — `members` is in
+        speaking order, so the first of them wins. A bloc never casts
+        nothing."""
+        s = self.state
+        last = rounds[-1]
+        standing = {}
+        for pid in members:
+            final = last[pid]
+            r = len(rounds) - 1
+            while r - 1 >= 0 and rounds[r - 1][pid] == final:
+                r -= 1
+            standing[pid] = r
+        best = min(standing.values())
+        carrier = next(p for p in members if standing[p] == best)
+        target = last[carrier]
+        # Retained as a diagnostic (§13.2): it now records that the backstop
+        # was needed, not that a vote was lost.
+        s.illegal("BLOC_VOTE_NON_UNANIMOUS", detail=f"bloc {bid}")
+        s.adjudicate("BLOC_BACKSTOP_APPLIED", f"bloc {bid} carried by {carrier}")
+        s.log("BLOC_BACKSTOP", {"bloc": bid, "carrier": carrier, "target": target},
+              visible_to=f"BLOC:{bid}")
+        s.metric("bloc_backstop", 1)
+        s.metric(f"bloc_standing_win_{carrier}", 1)
+        return target
+
+    def bloc_vote(self, targets=None):
+        """§5.5. Three blocs, one vote each, chosen from the slate.
 
         Unanimity is reached through bloc-internal deliberation: up to three
         rounds in which each member sees the others' prior-round proposals.
-        This implements the rule faithfully (three tethered people can talk);
-        it does not change it. Without the channel, independent choosing
-        agrees ~1 time in 81 and every bloc deadlocks.
+        Without that channel, independent choosing agrees ~1 time in 81 and
+        every bloc deadlocks. As of v4 a deadlock no longer loses the vote —
+        the longest-standing member carries the bloc.
         """
         s = self.state
+        finalists = list(targets) if targets else None
         cast = {}
+
         for bid, members in s.blocs.items():
             alive_members = [m for m in members if s.players[m].alive]
             if not alive_members:
                 continue
+
+            if finalists:
+                # A bloc may not vote for a finalist who is one of its own
+                # members — that would be a self-vote by that member (§5.5).
+                inside = [f for f in finalists if f in alive_members]
+                if len(inside) == 2:
+                    s.adjudicate("BLOC_ABSTAINS_BOTH_FINALISTS", f"bloc {bid}")
+                    s.log("BLOC_ABSTAIN", {"bloc": bid, "reason": "both finalists"})
+                    s.metric("bloc_abstains_both_finalists", 1)
+                    continue
+                if len(inside) == 1:
+                    forced = next(f for f in finalists if f != inside[0])
+                    cast[bid] = forced
+                    s.adjudicate("BLOC_FORCED_BY_MEMBERSHIP",
+                                 f"bloc {bid} -> {forced}")
+                    s.log("BLOC_VOTE_FORCED", {"bloc": bid, "target": forced},
+                          visible_to=f"BLOC:{bid}")
+                    continue
+
+            pool = finalists if finalists else s.living_ids()
+            rounds = []
             agreed = None
             for rnd in range(3):
                 proposals = {}
                 for pid in alive_members:
-                    legal = [x for x in s.living_ids() if x != pid]
+                    legal = [x for x in pool if x != pid]
+                    if not legal:
+                        continue
                     pick = self.agents.bloc_propose(s, pid, legal, rnd)
                     if pick not in legal:
                         s.illegal("MALFORMED_OUTPUT", actor=pid, detail="bloc_propose")
                         pick = self.rng.choice(legal)
                     proposals[pid] = pick
+                if not proposals:
+                    break
+                rounds.append(proposals)
                 s.log("BLOC_PROPOSALS", {"bloc": bid, "round": rnd,
                                          "proposals": proposals},
                       visible_to=f"BLOC:{bid}")
                 if len(set(proposals.values())) == 1:
                     agreed = next(iter(proposals.values()))
                     break
+            if agreed is None and rounds:
+                agreed = self._bloc_backstop(bid, list(rounds[-1]), rounds)
             if agreed is not None:
                 cast[bid] = agreed
-            else:
-                s.illegal("BLOC_VOTE_NON_UNANIMOUS", detail=f"bloc {bid}")
-                s.log("BLOC_DEADLOCK", {"bloc": bid})
 
         roped = {pid for m in s.blocs.values() for pid in m}
         remainder = [p for p in s.living_ids() if p not in roped]
         ballots = {f"bloc{b}": v for b, v in cast.items()}
+        pool = finalists if finalists else s.living_ids()
         for pid in remainder:
-            legal = [x for x in s.living_ids() if x != pid]
-            ballots[pid] = self.agents.vote(s, pid, legal)
+            legal = [x for x in pool if x != pid]
+            if not legal:
+                continue
+            ballots[pid] = self._cast_ballot(pid, legal, finalists is not None)
 
-        s.log("BLOC_VOTE_REVEAL", {"ballots": dict(ballots)})
+        s.log("BLOC_VOTE_REVEAL", {"ballots": dict(ballots),
+                                   "slate": finalists})
 
-        if not ballots:
-            s.float_event("ZERO_VOTE_COUNCIL", "all blocs deadlocked")
-            return None
+        # §5.5 — with three blocs and two finalists, at least one bloc
+        # contains neither, so a banishment always results and the count is
+        # preserved. If this ever fails the bloc assignment is broken.
+        assert ballots, (
+            "no vote cast at a roped council — §5.5 guarantees at least one "
+            "bloc can always vote")
 
-        tally = {}
-        for v in ballots.values():
-            tally[v] = tally.get(v, 0) + 1
-        top = max(tally.values())
-        tied = [k for k, v in tally.items() if v == top]
-        if len(tied) == 1:
-            return tied[0]
-        winner = self.rng.choice(tied)
-        s.log("RPS_RESOLUTION", {"candidates": tied, "result": winner,
-                                 "context": "bloc_1_1_1"})
-        s.metric("rps_resolution", 1)
-        return winner
+        return self.resolve_vote(ballots, list(s.living_ids()), targets)
 
     # ---------------- murders ----------------
     def select_target(self, exclude=()):
@@ -531,8 +832,23 @@ class Referee:
             s.adjudicate("TRAITOR_DEADLOCK_FORCED", f"standing winner {winner}")
         return target
 
+    def _sweep_voids_window(self, label):
+        """§9.7 — with zero living Traitors nobody selects, so the window
+        produces no victim and no Will. Returns True if the window is void."""
+        s = self.state
+        if s.living_role(TRAITOR):
+            return False
+        s.sweep_active = True
+        s.float_event("SWEEP_NO_MURDER", f"{label} voided at {s.phase}")
+        s.log("MURDER_VOIDED", {"label": label, "reason": "no living traitors"},
+              visible_to=[])
+        s.metric("sweep_no_murder", 1)
+        return True
+
     def overnight_murder(self, label, exclude=()):
         s = self.state
+        if self._sweep_voids_window(label):
+            return None
         target = self.select_target(exclude=exclude)
         if target is None:
             return None
@@ -548,6 +864,8 @@ class Referee:
     def plate_murder(self, forced_target=None):
         """§8.3. Placement global pre-meal; swaps reach-constrained; plate rules."""
         s = self.state
+        if forced_target is None and self._sweep_voids_window("MURDER_2"):
+            return None
         seats = s.living_ids()[:]
         self.rng.shuffle(seats)
 
@@ -614,19 +932,22 @@ class Referee:
         return len(s.living_role(TRAITOR)) == 1
 
     def try_succession(self, window):
-        """§9. Returns True if succession consumed the window."""
+        """§9. Returns None if the window was not consumed, else
+        {"outcome": "ACCEPTED"|"DECLINED", "victim": pid|None}. A decline
+        becomes the murder, so it carries a victim; an acceptance produces no
+        victim and owes a make-up (§9.6)."""
         s = self.state
         if not self.succession_available():
-            return False
+            return None
         traitor = s.living_role(TRAITOR)[0].pid
         elect = self.agents.succession_elect(s, traitor)
         s.log("SUCCESSION_ELECTION", {"recruit_mode": elect},
               visible_to=[traitor])
         if not elect:
-            return False
+            return None
         candidates = [p.pid for p in s.living_role(FAITHFUL)]
         if not candidates:
-            return False
+            return None
         recruit = self.agents.succession_offer(s, traitor, candidates)
         if recruit not in candidates:
             recruit = self.rng.choice(candidates)
@@ -639,17 +960,69 @@ class Referee:
             s.successor_created = True
             s.float_event("SUCCESSION_ACCEPT", f"{recruit} joined")
             s.metric("succession_accept", 1)
-            return True
+            # §9.6 (new in v4) — the window owed an elimination and produced
+            # none. The debt is repaired at NIGHT_3, not absorbed.
+            s.succession_makeup_owed = True
+            return {"outcome": "ACCEPTED", "victim": None}
         # declined -> the offer becomes the murder
         s.metric("succession_decline", 1)
+        victim = None
         if window == "SAT_DINNER":
             self.state.phase = "SAT_DINNER"
-            self.plate_murder(forced_target=recruit)
+            victim = self.plate_murder(forced_target=recruit)
         else:
             if not self.anchor_blocks(recruit):
                 self.eliminate(recruit, "MURDER")
                 self.write_will(recruit)
-        return True
+                victim = recruit
+        return {"outcome": "DECLINED", "victim": victim}
+
+    # ---------------- night 3 (§8.4) ----------------
+    def night_3(self):
+        """Up to three sequential eliminations: Anchor make-up, Succession
+        make-up, Murder #3. Each gets a full independent selection and
+        negotiation; no target may repeat within the night."""
+        s = self.state
+        s.phase = "NIGHT_3"
+
+        labels = []
+        if s.anchor_makeup_owed:
+            labels.append("ANCHOR_MAKEUP")
+        if s.succession_makeup_owed:
+            labels.append("SUCCESSION_MAKEUP")
+        labels.append("MURDER_3")
+        s.anchor_makeup_owed = False
+        s.succession_makeup_owed = False
+
+        victims = []
+        for label in labels:
+            if self._sweep_voids_window(label):
+                continue
+            outcome = self.try_succession("NIGHT_3")
+            if outcome is not None:
+                if outcome["victim"]:
+                    victims.append(outcome["victim"])
+                elif s.succession_makeup_owed:
+                    # Acceptance inside NIGHT_3 owes a make-up with no later
+                    # window to pay it in — so pay it here. The successor is
+                    # now a living Traitor, so Succession cannot trigger
+                    # again and this resolves as an ordinary murder.
+                    s.succession_makeup_owed = False
+                    v = self.overnight_murder("SUCCESSION_MAKEUP",
+                                              exclude=tuple(victims))
+                    if v:
+                        victims.append(v)
+                continue
+            v = self.overnight_murder(label, exclude=tuple(victims))
+            if v:
+                victims.append(v)
+
+        if len(victims) == 3:
+            s.adjudicate("TRIPLE_NIGHT_3",
+                         "anchor make-up + succession make-up + murder 3")
+            s.metric("triple_night_3", 1)
+        s.metric("night_3_victims", len(victims))
+        return victims
 
     # ---------------- transmission ----------------
     def transmission(self):
@@ -681,16 +1054,18 @@ class Referee:
         for pid in order:
             s.log("SPEAK", {"text": self.agents.speak(s, pid)}, actor=pid)
 
-        # 1. mandatory banishment (the ninth elimination)
-        banished = self.standard_vote()
+        # 1. mandatory banishment (the ninth elimination). RT_6 is exempt
+        # from the nomination round by name (§5.3.5), so this is a direct
+        # vote across all living players.
+        banished = self.standard_vote(None)
         if banished:
             self.eliminate(banished, "BANISHMENT")
-        if self.check_sweep():
-            s.ended_at_count = s.n_alive()
-            return
+        self.check_sweep()
 
         voters = s.living_ids()
-        if len(voters) > 3:
+        if len(voters) > 3 and not s.sweep_active:
+            # §9.7 — an oversized finale is the intended outcome of the sweep
+            # branch, not drift to be reported as a defect.
             s.adjudicate("FINALE_OVERSIZED", f"{len(voters)} finalists (drift)")
 
         # 2. Ballot 1 — End The Game or Banish Again
@@ -719,10 +1094,11 @@ class Referee:
         tied = [k for k, v in tally.items() if v == top]
 
         if len(voters) == 3 and len(tied) > 1:
-            s.ended_at_count = 3          # 1-1-1 ends at Final 3, no RPS
+            s.ended_at_count = 3          # 1-1-1 ends at Final 3 (§12.1)
             return
-        winner = tied[0] if len(tied) == 1 else self.resolve_plurality(ballots, voters)
+        winner = tied[0] if len(tied) == 1 else self._small_count_tie(tied, voters)
         self.eliminate(winner, "BANISHMENT")
+        self.check_sweep()
         s.ended_at_count = s.n_alive()
 
     # ---------------- scoring ----------------
@@ -737,12 +1113,18 @@ class Referee:
                            "traitors_alive": traitors_alive})
 
     def check_sweep(self):
-        """§9.7 — zero living Traitors ends the game immediately."""
+        """§9.7 — zero living Traitors no longer ends the game. Records the
+        sweep once and lets play continue to RT_6; the Faithful win is
+        declared at the finale reveal. Returns True on the transition only."""
         s = self.state
-        if len(s.living_role(TRAITOR)) == 0:
-            s.adjudicate("ZERO_TRAITORS_FAITHFUL_WIN")
-            return True
-        return False
+        if s.sweep_active or s.living_role(TRAITOR):
+            return False
+        s.sweep_active = True
+        s.float_event("TRAITOR_SWEEP", f"zero living Traitors at {s.phase}")
+        s.metric("sweep_phase", s.phase)
+        s.metric("sweep_at_council", s.councils_held)
+        s.log("TRAITOR_SWEEP", {"phase": s.phase}, visible_to=[])
+        return True
 
     # ---------------- main loop ----------------
     def run(self):
@@ -752,9 +1134,10 @@ class Referee:
         s.phase = "THU_ARRIVAL"
         self.assign_anchor()
 
+        # §9.7 — the sweep check no longer short-circuits the game. It records
+        # the transition and play continues to RT_6 in every branch.
         self.council("RT_0", voting=False)
-        if self.check_sweep():
-            self.score(); return s
+        self.check_sweep()
 
         s.phase = "NIGHT_1"
         self.overnight_murder("MURDER_1")
@@ -763,47 +1146,31 @@ class Referee:
 
         for name in ("RT_1", "RT_2"):
             self.council(name)
-            if self.check_sweep():
-                self.score(); return s
+            self.check_sweep()
         self.rope_check("RT_2")
 
         self.council("RT_3")
-        if self.check_sweep():
-            self.score(); return s
+        self.check_sweep()
         self.rope_check("RT_3")
 
         s.phase = "SAT_AFTERNOON"
         consumed = self.try_succession("SAT_DINNER")
 
         s.phase = "SAT_DINNER"
-        if not consumed:
+        if consumed is None:
             self.plate_murder()
-        if self.check_sweep():
-            self.score(); return s
+        self.check_sweep()
 
         self.council("RT_4")
-        if self.check_sweep():
-            self.score(); return s
+        self.check_sweep()
 
         self.transmission()
 
         self.council("RT_5")
-        if self.check_sweep():
-            self.score(); return s
+        self.check_sweep()
 
-        s.phase = "NIGHT_3"
-        first_victim = None
-        if s.makeup_owed:
-            consumed = self.try_succession("NIGHT_3")
-            if not consumed:
-                first_victim = self.overnight_murder("MAKEUP")
-            s.makeup_owed = False
-        consumed = self.try_succession("NIGHT_3")
-        if not consumed:
-            self.overnight_murder(
-                "MURDER_3", exclude=(first_victim,) if first_victim else ())
-        if self.check_sweep():
-            self.score(); return s
+        self.night_3()
+        self.check_sweep()
 
         self.finale()
         self.score()

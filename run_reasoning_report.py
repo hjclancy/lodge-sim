@@ -154,12 +154,19 @@ reasoning.
 3. NOTABLE REASONING MOMENTS — where an archetype played true to or diverged from its \
 persona spec, where a decision visibly shaped the next beat, where an agent found or missed \
 something (the plate, an Anchor-pass tell, a contradiction in someone's voting record).
-4. HOW EACH MECHANIC ACTUALLY PLAYED — the Anchor (who held it, whether/when a Traitor \
+4. THE NOMINATION ROUNDS — new in canon v4 and the largest change to how a Council runs. \
+Each Council, every living player named one other player out loud, in a randomized order, \
+seeing every nomination made before theirs; the three most-named formed a slate, the lowest \
+was dropped by name, and the surviving two defended themselves before a ballot restricted to \
+those two. Look at what that structure did: whether early nominations dragged later ones \
+along, whether anyone used the order, whether a defense visibly changed the vote, and whether \
+being dropped third was survivable. Say plainly if none of it mattered in this game.
+5. HOW EACH MECHANIC ACTUALLY PLAYED — the Anchor (who held it, whether/when a Traitor \
 learned its meaning, whether it blocked a murder), the rope (if it raised — bloc composition, \
-whether blocs reached unanimity), the plate at Saturday dinner (was it noticed, was there a \
-swap), the Sunday Transmission, Succession (if triggered — offered to whom, accepted or \
-declined), and the finale.
-5. A short closing paragraph: what this specific game illustrates — about an archetype, a \
+whether blocs reached unanimity or fell to the longest-standing backstop), the plate at \
+Saturday dinner (was it noticed, was there a swap), the Sunday Transmission, Succession (if \
+triggered — offered to whom, accepted or declined), and the finale.
+6. A short closing paragraph: what this specific game illustrates — about an archetype, a \
 mechanic, or the ruleset.
 
 VERIFIED FACTS:

@@ -1,6 +1,6 @@
 """
 Skeleton harness. Runs N games with random bots and asserts the
-structural invariants from CANON v2 §16 stage 1.
+structural invariants from CANON v4 §16 stage 1.
 """
 
 import sys
@@ -61,10 +61,12 @@ def check(state):
                 if not s.successor_created:
                     bad.append("TRAITOR_TARGETED_TRAITOR")
 
-    # 8. per-phase elimination caps (§3)
+    # 8. per-phase elimination caps (§3). NIGHT_3 rises to 3 in v4: the
+    # Anchor make-up, the Succession make-up and Murder #3 can all be owed in
+    # the same night (§8.4).
     caps = {"RT_0": 0, "NIGHT_1": 1, "RT_1": 1, "RT_2": 1, "RT_3": 1,
             "SAT_DINNER": 1, "RT_4": 1, "SUN_TRANSMISSION": 0,
-            "RT_5": 1, "NIGHT_3": 2, "RT_6_FINALE": 2}
+            "RT_5": 1, "NIGHT_3": 3, "RT_6_FINALE": 2}
     per_phase = {}
     for e in s.transcript:
         if e.type == "ELIMINATION":
@@ -79,20 +81,60 @@ def check(state):
     if n + len(elim) != 12:
         bad.append("BOOKKEEPING_MISMATCH")
 
-    # 9. ending size explained by float events / early sweep
-    swept = any(a["tag"] == "ZERO_TRAITORS_FAITHFUL_WIN" for a in s.adjudications)
-    drift = sum(1 for f in s.float_events
-                if f["tag"] in ("ZERO_VOTE_COUNCIL", "SUCCESSION_ACCEPT"))
-    if not swept:
-        # baseline 3, +1 per absorbed drift, +1 if finale chose to end early
-        if not (2 <= n <= 3 + drift):
-            bad.append(f"ENDING_SIZE_UNEXPLAINED(n={n},drift={drift})")
+    # 9. ending size. Baseline is Final 3; Ballot 2 can take it to Final 2.
+    # Every murder window that produced no victim raises it by one. In v4 the
+    # Anchor break and a Succession acceptance are both repaired at NIGHT_3
+    # (§8.4), so the only unrepaired sources left are a window voided by the
+    # sweep (§9.7 — expected, not drift) and a window with no legal target.
+    voided = sum(1 for f in s.float_events if f["tag"] == "SWEEP_NO_MURDER")
+    voided += sum(1 for a in s.adjudications if a["tag"] == "NO_LEGAL_MURDER_TARGET")
+    if not (2 <= n <= 3 + voided):
+        bad.append(f"ENDING_SIZE_UNEXPLAINED(n={n},voided={voided})")
 
     # 10. winner determined correctly
     ta = len(s.living_role(TRAITOR))
     expect = "TRAITORS" if ta > 0 else "FAITHFUL"
     if s.winner != expect:
         bad.append("WINNER_MISCOMPUTED")
+
+    # 11. §17 assert-zero. All three mechanics are removed from the ruleset;
+    # any occurrence is an implementation defect, not a game outcome.
+    if any(e.type == "RPS_RESOLUTION" for e in s.transcript):
+        bad.append("RPS_RESOLUTION_OCCURRED")
+    if any(f["tag"] == "ZERO_VOTE_COUNCIL" for f in s.float_events):
+        bad.append("ZERO_VOTE_COUNCIL_OCCURRED")
+    if any(a["tag"] == "THREE_WAY_TIE" for a in s.adjudications):
+        bad.append("THREE_WAY_TIE_OCCURRED")
+
+    # 12. §5.3 — every council that ran a nomination round produced exactly
+    # two finalists, or banished a sole nominee outright.
+    slate_set = {}
+    sole = set()
+    for e in s.transcript:
+        if e.type == "SLATE_SET":
+            slate_set[e.phase] = e.payload["finalists"]
+        elif e.type == "SLATE_SOLE_NOMINEE":
+            sole.add(e.phase)
+    for e in s.transcript:
+        if e.type != "NOMINATION_ORDER":
+            continue
+        if e.phase in sole:
+            continue
+        finalists = slate_set.get(e.phase)
+        if finalists is None or len(finalists) != 2:
+            bad.append(f"SLATE_NOT_TWO({e.phase}:{finalists})")
+
+    # 13. §5.3.4 — no ballot at a slate council ever named a non-finalist.
+    for e in s.transcript:
+        if e.type not in ("VOTE_REVEAL", "BLOC_VOTE_REVEAL"):
+            continue
+        slate = e.payload.get("slate")
+        if not slate:
+            continue
+        for target in e.payload["ballots"].values():
+            if target not in slate:
+                bad.append(f"VOTE_OFF_SLATE_COUNTED({e.phase}:{target})")
+                break
 
     return bad
 

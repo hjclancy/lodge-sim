@@ -120,6 +120,38 @@
       "invariant_violations": 0,
       "commit": "7ff5e60",
       "run_url": "https://github.com/hjclancy/lodge-sim/actions/runs/30305254380"
+    },
+    {
+      "run_id": "2026-07-27T22:05:28Z",
+      "date": "2026-07-27",
+      "kind": "structural",
+      "report": "structural_2026-07-27-4.html",
+      "games": 5000,
+      "model": "heuristic-bots",
+      "params_digest": "ff187ff2",
+      "params_summary": "defaults ff187ff2",
+      "params_overrides": [],
+      "cost_usd": 0.0,
+      "elapsed_s": 11.6,
+      "notes": "",
+      "traitor_win_pct": 87.4,
+      "faithful_win_pct": 12.6,
+      "final_2_pct": 37.72,
+      "final_3_pct": 56.92,
+      "final_4plus_pct": 5.36,
+      "sweep_pct": 12.6,
+      "anchor_break_pct": 18.16,
+      "nomination_conversion_pct": 56.516,
+      "nomination_accuracy_pct": 37.9808,
+      "dropped_traitor_pct": 30.7553,
+      "bloc_non_unanimous_per_game": 0.2564,
+      "plate_detections": 2180,
+      "plate_detect_per_game": 0.436,
+      "succession_trigger_pct": 9.82,
+      "succession_accept_pct": 5.16,
+      "invariant_violations": 0,
+      "commit": null,
+      "run_url": null
     }
   ]
 }

@@ -194,6 +194,110 @@ class HeuristicAgents:
             bits.append("I'm holding something. I won't say what it does.")
         return " ".join(bits) if bits else "Still thinking."
 
+    def _nomination_leader(self, s, legal):
+        """Who is currently ahead in this council's nomination round, among
+        players still legal to name. Ties resolve to the earliest nomination,
+        matching the referee's own §5.3.2 rule so a contrarian bot pushes
+        against the player the slate would actually favour."""
+        counts, earliest = {}, {}
+        for _nominator, (nominee, idx) in s.nominations.items():
+            if nominee not in legal:
+                continue
+            counts[nominee] = counts.get(nominee, 0) + 1
+            if nominee not in earliest or idx < earliest[nominee]:
+                earliest[nominee] = idx
+        if not counts:
+            return None
+        return sorted(counts, key=lambda n: (-counts[n], earliest[n]))[0]
+
+    def nominate(self, s, pid, legal):
+        """§5.3.1. Same parameter blend as vote(), with two differences the
+        nomination round introduces: it is sequential and public, so prior
+        nominations are visible and `contrarian` has something concrete to
+        push against; and it is an accusation rather than a ballot, so
+        `accusation` — which vote() ignores — is the strongest term.
+
+        MODELING CHOICE, not ground truth, on the same terms as every other
+        mapping in this file:
+          accusation  commit hard to whoever currently looks worst
+          record      weight by public vote history, softer than accusation
+          contrarian  name someone other than the round's current leader
+          coalition   follow the ally's nomination, and shield the ally
+          baseline    a constant 0.6 so a maxed parameter never fully
+                      determines the choice
+
+        A real player's nomination is also a bid for the floor and a signal
+        to everyone who has not spoken yet. None of that is modelled: this
+        picks a name. Nomination accuracy figures should be read the same way
+        as vote accuracy — as what this parameterization does, not as what a
+        person with that temperament would do."""
+        if not legal:
+            return None
+        p = self._p(s, pid)
+        suspicion = self._suspicion_scores(s)
+        leader = self._nomination_leader(s, legal)
+        buddy = self._buddy(s, pid)
+        buddy_pick = s.nominations.get(buddy, (None, None))[0]
+
+        w_accusation = p["accusation"]
+        w_record = p["record"]
+        w_contrarian = p["contrarian"] if leader else 0.0
+        w_coalition = p["coalition"] if buddy_pick in legal else 0.0
+        w_base = 0.6
+
+        total = w_accusation + w_record + w_contrarian + w_coalition + w_base
+        roll = self.rng.random() * total
+
+        if roll < w_accusation:
+            choice = max(legal, key=lambda x: suspicion.get(x, 0.0))
+        else:
+            roll -= w_accusation
+            if roll < w_record:
+                weights = [max(suspicion.get(x, 0.0), 0.05) for x in legal]
+                choice = self._weighted_choice(legal, weights)
+            else:
+                roll -= w_record
+                if roll < w_contrarian:
+                    choices = [x for x in legal if x != leader] or legal
+                    choice = self.rng.choice(choices)
+                else:
+                    roll -= w_contrarian
+                    if roll < w_coalition:
+                        choice = buddy_pick
+                    else:
+                        choice = self.rng.choice(legal)
+
+        # `coalition` also shields: a high-coalition player is reluctant to
+        # put their own ally on the slate.
+        if choice == buddy and self.rng.random() < p["coalition"]:
+            alt = [x for x in legal if x != buddy]
+            if alt:
+                choice = self.rng.choice(alt)
+
+        return self._avoid_fellow_traitor(s, pid, choice, legal)
+
+    def defend(self, s, pid):
+        """§5.3.3. Templated and mechanically inert. `volubility` picks the
+        register and `accusation` decides whether the defense redirects at
+        someone else.
+
+        Nothing downstream reads this string. That is not an oversight in the
+        implementation, it is the honest shape of the model: a real defense
+        moves votes, and this tier's vote() has no channel through which a
+        defense could move one. Expect the defense round to show up in the
+        structural report as pure cost — it changes no number here. It is the
+        Claude tier that can test whether a defense does anything."""
+        p = self._p(s, pid)
+        others = [x for x in s.living_ids() if x != pid]
+        if self.rng.random() < p["accusation"] and others:
+            suspicion = self._suspicion_scores(s)
+            weights = [max(suspicion.get(x, 0.0), 0.05) for x in others]
+            return (f"This is the wrong name. Look at "
+                    f"{self._weighted_choice(others, weights)}.")
+        if self.rng.random() < p["volubility"]:
+            return "I have been consistent all weekend. Check the record."
+        return "I have nothing to add."
+
     def vote(self, s, pid, legal):
         """Blend of contrarianism, coalition, and record (§ brief). A
         constant baseline weight is always in the mix so a maxed-out `record`

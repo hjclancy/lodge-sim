@@ -47,16 +47,19 @@ KIND_LABEL = {"structural": "Structural", "reasoning": "Reasoning", "other": "Ot
 LINE_METRICS = [
     ("traitor_win_pct", "Traitor win %", "pct"),
     ("final_2_pct", "Final 2 %", "pct"),
-    ("rope_pct", "Rope raised %", "pct"),
     ("anchor_break_pct", "Anchor break %", "pct"),
-    ("zero_vote_council_pct", "Zero-vote council %", "pct"),
+    ("sweep_pct", "Swept %", "pct"),
+    ("nomination_conversion_pct", "Top nominee banished %", "pct"),
+    ("nomination_accuracy_pct", "Nomination accuracy %", "pct"),
+    ("dropped_traitor_pct", "Dropped nominee was Traitor %", "pct"),
     ("succession_accept_pct", "Succession accepted %", "pct"),
     ("bloc_non_unanimous_per_game", "Bloc non-unanimous /game", "count"),
     ("plate_detect_per_game", "Plate detect /game", "count"),
     ("invariant_violations", "Invariant violations", "count"),
     ("cost_usd", "Cost (USD)", "count"),
 ]
-DEFAULT_LINE_METRICS = ["traitor_win_pct", "final_2_pct", "bloc_non_unanimous_per_game"]
+DEFAULT_LINE_METRICS = ["traitor_win_pct", "nomination_accuracy_pct",
+                        "nomination_conversion_pct"]
 
 EXTRA_CSS = """
 ul.reports { list-style: none; padding: 0; margin: 0.4rem 0 1.8rem 0; }
