@@ -1,6 +1,33 @@
 # The Lodge — Simulation
 
-Implements REFEREE CANON v3 and ARCHETYPES v1.
+Implements REFEREE CANON v4 and ARCHETYPES v1.
+
+## Canon v4 — what changed
+Councils gained a **nomination round**: every living player names one other
+player, out loud and in a logged order, seeing every nomination made before
+theirs. The three most-nominated form a provisional slate, the lowest is dropped
+by name, the remaining two defend themselves, and **the ballot is restricted to
+those two**. Ties resolve on a deterministic ladder — revote after discussion,
+then higher nomination count, then earliest nomination — and **RPS is gone**.
+Blocs vote from the same slate and can never cast nothing: after three failed
+rounds the longest-standing member carries the bloc. Succession acceptance now
+owes a make-up elimination at `NIGHT_3`, which can therefore resolve up to three
+kills. A zero-Traitor sweep no longer ends the game: play continues to `RT_6`,
+later murder windows produce no victim, and the Faithful win is declared at the
+finale reveal.
+
+Measured against the v3 baseline at 5,000 heuristic games:
+
+| | v3 | v4 | target |
+|---|---|---|---|
+| `THREE_WAY_TIE` | 0.79/game | **0** | 0.002 |
+| `ZERO_VOTE_COUNCIL` | 0.325/game | **0** (removed from the ruleset) | 0.002 |
+| `FINALE_OVERSIZED` | 0.34/game | **0** | 0.10 |
+| `RPS_RESOLUTION` | present | **0** (removed from the ruleset) | 0 |
+| Traitor win | 88.1% | 87.4% | 60% |
+
+The win split is **deliberately unaddressed** in v4 (canon §15 item 5, §16.4).
+It is the input to the next decision, not a problem to fix in this version.
 
 ## Stage 1 — skeleton (complete)
     python3 run_skeleton.py [N] [swap_prob] [coord]
@@ -175,6 +202,8 @@ secret — nothing else refers to the key.
 | file | role |
 |---|---|
 | `referee.py` | the engine. Owns all state, enforces all rules. |
+| `referee_canon_v4.md` | the rules this implements. `referee_canon_v3.md` is kept for the diff. |
+| `council_metrics.py` | the §17 v4 metrics — nomination accuracy, conversion, drops, tie ladder, sweep. Shared by both aggregate harnesses so they cannot define them differently. |
 | `bots.py` | uniform-random agents (stage 1). |
 | `run_skeleton.py` | stage-1 harness + invariant assertions. |
 | `heuristic_bots.py` | archetype-parameter-driven agents (stage 1.5) — a modeling choice, not ground truth. |
@@ -209,17 +238,24 @@ secret — nothing else refers to the key.
 Rough estimate: Haiku $120–220, Sonnet $400–700 (transcripts grow through the
 game, so later calls cost more). Run 5 first and read the traces.
 
-## The two things to check on the first real run
-1. **`BLOC_VOTE_NON_UNANIMOUS` should collapse.** Blocs now deliberate for up to
-   three rounds, each seeing the others' prior proposals (canon §20.1). If this
-   stays near the random-bot rate, the negotiation channel is not working and
-   every game will take the drift path.
-2. **`PLATE DETECTION` should be non-zero and concentrated in A06/A12.** Zero
+## The three things to check on the first real run
+1. **Nomination accuracy should clear the 25–33% base rate**, per archetype. An
+   archetype below it is a defective parameter mapping in `heuristic_bots.py`,
+   not a finding about the game. Canon §17 requires this diagnostic to come back
+   clean before the Traitor/Faithful split is treated as a balance problem.
+   Heuristic bots currently sit at 38% pooled.
+2. **`BLOC_VOTE_NON_UNANIMOUS` now means the backstop fired**, not that a vote
+   was lost — v4 §13.2 keeps the tag as a diagnostic. It should track
+   `BLOC_BACKSTOP_APPLIED` exactly. A bloc casting nothing is no longer possible;
+   `run_skeleton.check` asserts `ZERO_VOTE_COUNCIL` is zero.
+3. **`PLATE DETECTION` should be non-zero and concentrated in A06/A12.** Zero
    means the reasoning gate never fires and §8.3 is untested. Detection is parsed
    from the agent's own unprompted reasoning — never convert it to a probability.
+   Canon §8.3 carries a known v3 defect here: detection concentrates in A03
+   rather than A06, and is not fixed in v4.
 
 ## Agent protocol
-council_prompt, speak, vote, bloc_propose, anchor_pass, murder_propose,
+council_prompt, speak, **nominate**, **defend**, vote, bloc_propose, anchor_pass, murder_propose,
 plate_detect, plate_swap, write_will, will_recipient_self, will_recipient_court,
 succession_elect, succession_offer, succession_respond, transmission_questions,
 transmission_answers, finale_continue.

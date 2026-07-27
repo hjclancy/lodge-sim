@@ -37,15 +37,24 @@ def metrics_from(r):
     n = r["n_games"]
     pct = lambda x: 100.0 * x / n
     detections = sum(r["detects"].values())
+    cm = r["council"]
+    # Nomination accuracy pooled across archetypes — the per-archetype
+    # breakdown is the diagnostic (§17) and lives in the report; the pooled
+    # figure is what a history row can usefully carry.
+    nom_hits = sum(v[0] for v in cm.nomination_accuracy.values())
+    nom_total = sum(v[1] for v in cm.nomination_accuracy.values())
+    nom_acc = (100.0 * nom_hits / nom_total) if nom_total else None
     return {
         "traitor_win_pct": pct(r["wins"].get("TRAITORS", 0)),
         "faithful_win_pct": pct(r["wins"].get("FAITHFUL", 0)),
         "final_2_pct": pct(r["endings"].get("Final 2", 0)),
         "final_3_pct": pct(r["endings"].get("Final 3", 0)),
         "final_4plus_pct": pct(r["endings"].get("Final 4+", 0)),
-        "rope_pct": pct(r["rope_fired"]),
         "anchor_break_pct": pct(r["floats"].get("ANCHOR_BREAK", 0)),
-        "zero_vote_council_pct": pct(r["floats"].get("ZERO_VOTE_COUNCIL", 0)),
+        "sweep_pct": pct(cm.sweep_games),
+        "nomination_conversion_pct": cm.conversion_pct(),
+        "nomination_accuracy_pct": nom_acc,
+        "dropped_traitor_pct": cm.dropped_traitor_pct(),
         "bloc_non_unanimous_per_game": r["illegal"].get("BLOC_VOTE_NON_UNANIMOUS", 0) / n,
         "plate_detections": detections,
         "plate_detect_per_game": detections / n,
@@ -100,7 +109,9 @@ def main():
     print(f"{'='*66}")
     print(f"  traitor win        {m['traitor_win_pct']:.1f}%")
     print(f"  final 2            {m['final_2_pct']:.1f}%")
-    print(f"  rope raised        {m['rope_pct']:.1f}%")
+    print(f"  top nominee banished {m['nomination_conversion_pct']:.1f}%")
+    print(f"  nomination accuracy  {m['nomination_accuracy_pct']:.1f}%")
+    print(f"  swept                {m['sweep_pct']:.1f}%")
     print(f"  bloc non-unanimous {m['bloc_non_unanimous_per_game']:.2f}/game")
     print(f"  plate detections   {m['plate_detections']:,}")
     print(f"  invariants         {m['invariant_violations']} violation(s)")

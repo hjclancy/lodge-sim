@@ -25,6 +25,14 @@ class RandomAgents:
     def speak(self, s, pid):
         return ""
 
+    def nominate(self, s, pid, legal):
+        """§5.3.1. Uniform random. Random bots have no read to commit."""
+        return self.rng.choice(legal) if legal else None
+
+    def defend(self, s, pid):
+        """§5.3.3. Defense has no mechanical effect; random bots say nothing."""
+        return ""
+
     def vote(self, s, pid, legal):
         if not legal:
             return None

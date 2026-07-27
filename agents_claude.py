@@ -22,6 +22,14 @@ PLATE_WORDS = ("plate", "plates", "china", "motif", "dish", "crockery",
                "place setting", "cairn", "tableware", "setting")
 
 
+def _ordinal(n):
+    if 10 <= n % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
+
 def visible(state, pid, ev):
     v = ev.visible_to
     if v == "ALL":
@@ -52,6 +60,23 @@ def render(ev):
         return f"[{ev.phase}] BLOC VOTES: " + ", ".join(f"{k}->{v}" for k, v in p["ballots"].items())
     if t == "ELIMINATION":
         return f"[{ev.phase}] {p['pid']} is out ({p['how'].lower()})."
+    # §5.3 — the nomination record, the slate and the defenses are public and
+    # durable, so every one of them has to reach the agent's transcript.
+    if t == "NOMINATION_ORDER":
+        return f"[{ev.phase}] speaking order for nominations: " + " -> ".join(p["order"])
+    if t == "NOMINATION":
+        return f"[{ev.phase}] {ev.actor} nominates {p['nominee']}."
+    if t == "SLATE_DROP":
+        return (f"[{ev.phase}] {p['pid']} had {p['nominations']} nomination(s) and is "
+                f"dropped from the slate.")
+    if t == "SLATE_SET":
+        return (f"[{ev.phase}] the two names going to the vote: "
+                + " and ".join(p["finalists"]) + ".")
+    if t == "SLATE_SOLE_NOMINEE":
+        return (f"[{ev.phase}] every player nominated {p['pid']}. Banished with no "
+                f"defense and no vote.")
+    if t == "DEFENSE":
+        return f"[{ev.phase}] {ev.actor} defends: {p.get('text','')}"
     if t == "ANCHOR_PASS":
         return f"[{ev.phase}] {p['from']} passed the token to {p['to']}."
     if t == "ANCHOR_ASSIGNED":
@@ -168,16 +193,68 @@ class ClaudeAgents:
         txt = d.get("action") or d.get("text") or ""
         return str(txt)[:400]
 
+    def nominate(self, s, pid, legal):
+        """§5.3.1. The instruction has to carry what makes a nomination
+        different from a vote: it is spoken aloud, it is attributed, it is on
+        the record for the rest of the game, and the order it is made in
+        decides tiebreaks."""
+        already = len(s.nominations)
+        d = self._ask(
+            s, pid,
+            "Nominate one player for the slate. 'action' must be NOMINATE.\n"
+            "This is spoken out loud, in front of everyone, and it is attributed "
+            "to you permanently — unlike the vote, which is simultaneous.\n"
+            f"You are speaking {_ordinal(already + 1)} in this round; "
+            f"{already} nomination(s) have already been made and you can see them "
+            "above. Order matters: the three most-nominated players form a "
+            "provisional slate, ties are broken in favour of whoever was named "
+            "earliest, the lowest of the three is dropped by name, and the "
+            "remaining two defend themselves and go to the ballot. If every "
+            "living player names the same person, that person is banished with "
+            "no defense and no vote.",
+            legal, tag="nominate")
+        return self._target(d, legal)
+
+    def defend(self, s, pid):
+        """§5.3.3. One speech, the only one that happens after the slate is
+        known and before the ballot."""
+        other = [x for x in s.slate if x != pid]
+        against = other[0] if other else "the other finalist"
+        d = self._ask(
+            s, pid,
+            f"You are one of the two names on the slate, against {against}. "
+            "Everyone else is about to vote for one of you and nobody else. "
+            "This is your only chance to answer before that vote — there is no "
+            "further discussion. Put your spoken words in 'action' and null in "
+            "'target'.",
+            tag="defend")
+        txt = d.get("action") or d.get("text") or ""
+        return str(txt)[:400]
+
     def vote(self, s, pid, legal):
-        d = self._ask(s, pid, "Vote to remove one player. 'action' must be VOTE.",
-                      legal, tag="vote")
+        if s.slate and set(legal) <= set(s.slate):
+            instruction = (
+                "Vote to remove one player. 'action' must be VOTE.\n"
+                "The ballot is restricted to the slate: "
+                + " and ".join(s.slate)
+                + ". A vote for anyone else is void. Votes are simultaneous and "
+                "then revealed in full.")
+        else:
+            instruction = "Vote to remove one player. 'action' must be VOTE."
+        d = self._ask(s, pid, instruction, legal, tag="vote")
         return self._target(d, legal)
 
     def bloc_propose(self, s, pid, legal, rnd):
+        slate_note = ""
+        if s.slate and set(legal) <= set(s.slate):
+            slate_note = (" The ballot is restricted to the slate, so your group "
+                          "is choosing between " + " and ".join(s.slate) + ".")
         d = self._ask(s, pid,
                       f"You are tethered to two others and your group casts ONE vote, "
-                      f"which must be unanimous or is discarded. Negotiation round "
-                      f"{rnd+1} of 3. Name who your group should vote for.",
+                      f"which must be unanimous. Negotiation round {rnd+1} of 3. If "
+                      f"your group still disagrees after three rounds, whoever named "
+                      f"their pick first and never moved off it carries the group."
+                      f"{slate_note} Name who your group should vote for.",
                       legal, tag="bloc")
         return self._target(d, legal)
 
