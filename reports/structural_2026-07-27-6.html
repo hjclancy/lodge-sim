@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lodge structural report (10000 games)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --ink: #2a2622;
+  --ink-soft: #5a5349;
+  --paper: #faf7f0;
+  --panel: #ffffff;
+  --line: #e2dccd;
+  --accent: #6b3f2a;
+  --accent-soft: #9c6b4c;
+  --disclaimer-bg: #fff3d6;
+  --disclaimer-border: #c9962f;
+  --good: #3f6b3f;
+  --bad: #a13b3b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 0 4rem 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Georgia, "Iowan Old Style", serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+header.page {
+  background: var(--accent);
+  color: #fbf3e6;
+  padding: 2.2rem 0 1.6rem 0;
+  margin-bottom: 2rem;
+}
+header.page .wrap h1 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+header.page .wrap .meta {
+  color: #ecd9bd;
+  font-size: 0.95rem;
+}
+h2 {
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 0.35rem;
+  margin-top: 2.4rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-top: 1.6rem;
+}
+p { max-width: 72ch; }
+.summary {
+  font-size: 1.08rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1.1rem 1.3rem;
+}
+.disclaimer {
+  background: var(--disclaimer-bg);
+  border-left: 5px solid var(--disclaimer-border);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  margin: 1.4rem 0;
+  font-size: 0.98rem;
+}
+.disclaimer strong { color: #6b4c00; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8rem 0 1.6rem 0;
+  background: var(--panel);
+  font-size: 0.95rem;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent);
+  padding-bottom: 0.3rem;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.75rem;
+  text-align: right;
+}
+th:first-child, td:first-child { text-align: left; }
+thead th {
+  background: #f1e9d8;
+  color: var(--ink);
+  font-weight: 600;
+}
+tbody tr:nth-child(even) { background: #fbf8f1; }
+.note {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: -0.9rem 0 1.6rem 0;
+}
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pill.ok { background: #e2ecdd; color: var(--good); }
+.pill.bad { background: #f4dede; color: var(--bad); }
+footer.page {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ece6d9;
+    --ink-soft: #b8b0a0;
+    --paper: #201d18;
+    --panel: #2a2620;
+    --line: #453f34;
+    --accent: #d99b6c;
+    --accent-soft: #c98a58;
+    --disclaimer-bg: #3a2f14;
+    --disclaimer-border: #d9a53a;
+    --good: #8fbf8f;
+    --bad: #e08a8a;
+  }
+  header.page { background: #3a2416; color: #f3e6d4; }
+  header.page .wrap .meta { color: #d9c2a0; }
+  thead th { background: #362f22; }
+  tbody tr:nth-child(even) { background: #262219; }
+  .disclaimer strong { color: #f0c874; }
+}
+</style>
+</head>
+<body>
+<header class="page"><div class="wrap">
+  <h1>The Lodge — Structural / Distributional Report</h1>
+  <div class="meta">n = 10,000 games &middot; heuristic bots (zero API calls) &middot; 16.7s wall-clock &middot; params 10 overrides 6f4d179c &middot; generated 2026-07-27</div>
+</div></header>
+<div class="wrap">
+<div class="summary">Across 10,000 heuristic-bot games (16.7s wall-clock, no API calls), Traitors won 86.4% of games (95% CI &plusmn;0.7pts) and Faithful won 13.6%. The game most often ends at Final 3 (57.4% of games). The top nominee was banished in 57% of slate councils. <span class="pill ok">zero invariant violations</span></div>
+<div class="disclaimer"><strong>What this report is and isn't.</strong> These are 10,000 games played by <em>heuristic bots</em> — deterministic decision rules built from the twelve archetypes' declared parameters (see heuristic_bots.py), not by reasoning agents and not by real players. They answer <strong>"how often" and "how distributed"</strong> — win rates, survival curves, mechanic firing rates — at a volume real reasoning agents can't reach affordably. They do not answer <strong>"why"</strong> or capture how an actual reasoning agent (or a human) would read the table, notice a tell, or change its mind mid-game. Questions about reasoning quality, what an archetype actually attends to, or how a specific game unfolded belong to the Sonnet reasoning report (reports/reasoning_*.html), not here.</div>
+<h2>Outcomes</h2>
+<table>
+<thead><tr><th>Winner</th><th>Games</th><th>Share</th><th>95% CI</th></tr></thead>
+<tbody>
+<tr><td>TRAITORS</td><td>8,641</td><td>86.4%</td><td>±0.7pts</td></tr>
+<tr><td>FAITHFUL</td><td>1,359</td><td>13.6%</td><td>±0.7pts</td></tr>
+</tbody></table>
+<h2>Ending size</h2>
+<table>
+<thead><tr><th>Ending</th><th>Games</th><th>Share</th></tr></thead>
+<tbody>
+<tr><td>Final 2</td><td>3,661</td><td>36.6%</td></tr>
+<tr><td>Final 3</td><td>5,744</td><td>57.4%</td></tr>
+<tr><td>Final 4+</td><td>595</td><td>6.0%</td></tr>
+</tbody></table>
+<h2>Banishment accuracy as Faithful, per archetype</h2>
+<div class="disclaimer"><strong>Read this before acting on the win split.</strong> Base rate is 25&ndash;33%: three Traitors among nine to eleven other players. An archetype <em>below</em> base rate is evidence of a defective parameter mapping in heuristic_bots.py, not of a game property &mdash; a bot that votes worse than chance is a bug in the model of that persona. Canon §17 requires this diagnostic to come back clean before the Traitor/Faithful split (§15 item 5) is treated as a balance problem.</div>
+<table>
+<thead><tr><th>Archetype</th><th>Ballot accuracy</th><th>Ballots cast</th><th>Nomination accuracy</th><th>Nominations made</th></tr></thead>
+<tbody>
+<tr><td>A01 The Ledger</td><td>30%</td><td>21,076</td><td>39%</td><td>24,882</td></tr>
+<tr><td>A02 The Bulldozer</td><td>29%</td><td>17,525</td><td>39%</td><td>21,307</td></tr>
+<tr><td>A03 The Cartographer</td><td>32%</td><td>23,547</td><td>39%</td><td>26,787</td></tr>
+<tr><td>A04 The Guide</td><td>30%</td><td>21,975</td><td>36%</td><td>25,666</td></tr>
+<tr><td>A05 The Cornice</td><td>29%</td><td>20,289</td><td>38%</td><td>24,046</td></tr>
+<tr><td>A06 The Surveyor</td><td>31%</td><td>21,562</td><td>39%</td><td>25,209</td></tr>
+<tr><td>A07 The Storm-Watcher</td><td>29%</td><td>17,663</td><td>39%</td><td>21,439</td></tr>
+<tr><td>A08 The Rope</td><td>31%</td><td>22,472</td><td>36%</td><td>25,995</td></tr>
+<tr><td>A09 The Volunteer</td><td>31%</td><td>22,457</td><td>38%</td><td>25,891</td></tr>
+<tr><td>A10 The Second</td><td>32%</td><td>22,583</td><td>37%</td><td>26,072</td></tr>
+<tr><td>A11 The Counterweight</td><td>29%</td><td>19,515</td><td>39%</td><td>23,315</td></tr>
+<tr><td>A12 The Warden</td><td>30%</td><td>21,767</td><td>37%</td><td>25,397</td></tr>
+</tbody></table>
+<p class="note">Both columns count only Faithful actors, and both count a hit as landing on a player whose role at end of game was Traitor &amp;mdash; a Successor is therefore counted a Traitor for the whole game, which at the measured acceptance rate shifts these by well under a point. Ballot accuracy is now measured against a two-name slate, so its base rate is structurally higher than v3&#x27;s: it is not comparable across canon versions. Nomination accuracy is the one to compare against the 25–33% base rate.</p>
+<h2>Archetype survival to end, by role</h2>
+<table>
+<thead><tr><th>Archetype</th><th>Faithful survival</th><th>Traitor survival</th><th>Banished while Faithful</th></tr></thead>
+<tbody>
+<tr><td>A01 The Ledger</td><td>7%</td><td>67%</td><td>59%</td></tr>
+<tr><td>A02 The Bulldozer</td><td>5%</td><td>66%</td><td>45%</td></tr>
+<tr><td>A03 The Cartographer</td><td>9%</td><td>69%</td><td>73%</td></tr>
+<tr><td>A04 The Guide</td><td>8%</td><td>68%</td><td>62%</td></tr>
+<tr><td>A05 The Cornice</td><td>7%</td><td>65%</td><td>57%</td></tr>
+<tr><td>A06 The Surveyor</td><td>8%</td><td>64%</td><td>63%</td></tr>
+<tr><td>A07 The Storm-Watcher</td><td>5%</td><td>68%</td><td>48%</td></tr>
+<tr><td>A08 The Rope</td><td>9%</td><td>69%</td><td>66%</td></tr>
+<tr><td>A09 The Volunteer</td><td>8%</td><td>64%</td><td>68%</td></tr>
+<tr><td>A10 The Second</td><td>9%</td><td>67%</td><td>66%</td></tr>
+<tr><td>A11 The Counterweight</td><td>7%</td><td>64%</td><td>54%</td></tr>
+<tr><td>A12 The Warden</td><td>8%</td><td>67%</td><td>64%</td></tr>
+</tbody></table>
+<p class="note">§5.2&#x27;s known bias applies: this speech model discards volume and interruption, so loud archetypes (A02, A07) are under-modelled and quiet ones (A03, A10) are over-modelled. v4&#x27;s nomination round is a second, structured speaking pass that forces every player to commit a public position, which partially compensates — expect A03 and A10 to move on that change alone.</p>
+<h2>Nomination, slate and drop (§5.3)</h2>
+<table>
+<thead><tr><th></th><th>Count</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>Councils that produced a slate</td><td>50,000</td><td>5.00/game</td></tr>
+<tr><td>Top nominee banished</td><td>28,348</td><td>57%</td></tr>
+<tr><td>Third nominee dropped</td><td>49,476</td><td>4.95/game</td></tr>
+<tr><td>Dropped nominee was a Traitor</td><td>15,011</td><td>30%</td></tr>
+<tr><td>SLATE_TIE_EARLIEST</td><td>43,900</td><td>4.39/game</td></tr>
+<tr><td>SLATE_SOLE_NOMINEE</td><td>0</td><td>0.00/game</td></tr>
+<tr><td>Defense speeches</td><td>100,000</td><td>10.00/game</td></tr>
+</tbody></table>
+<p class="note">Conversion is how often the most-nominated player is the one banished — how much the nomination round actually decides. The dropped-nominee row is the cost of the drop: every Traitor in that count was named by the table and removed from the ballot before anyone could vote on them. Sole-nominee banishments count as conversions by definition; there is no ballot.</p>
+<h2>Tie ladder (§5.4)</h2>
+<table>
+<thead><tr><th>Step</th><th>Ties resolved</th><th>Share of ties</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>TIE_LADDER_STEP_1</td><td>5,019</td><td>62%</td><td>0.50/game</td></tr>
+<tr><td>TIE_LADDER_STEP_2</td><td>1,910</td><td>24%</td><td>0.19/game</td></tr>
+<tr><td>TIE_LADDER_STEP_3</td><td>1,068</td><td>13%</td><td>0.11/game</td></tr>
+<tr><td>SMALL_COUNT_TIE_FORCED</td><td>113</td><td>1%</td><td>0.01/game</td></tr>
+</tbody></table>
+<p class="note">RPS is gone. Steps 1–3 are deterministic and step 3 always resolves, because nomination order is a strict total ordering over nominees. SMALL_COUNT_TIE_FORCED is the only random elimination left in the ruleset and is reachable only below 5 alive, where there is no nomination record for steps 2 and 3 to read.</p>
+<h2>Bloc voting (§5.5)</h2>
+<table>
+<thead><tr><th></th><th>Count</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>BLOC_BACKSTOP_APPLIED</td><td>2,565</td><td>0.26/game</td></tr>
+<tr><td>BLOC_FORCED_BY_MEMBERSHIP</td><td>14,806</td><td>1.48/game</td></tr>
+<tr><td>BLOC_ABSTAINS_BOTH_FINALISTS</td><td>2,597</td><td>0.26/game</td></tr>
+</tbody></table>
+<p class="note">The backstop is how often a bloc failed to reach unanimity in three rounds and was carried by its longest-standing member. It replaces v3&#x27;s ZERO_VOTE_COUNCIL, which lost the vote entirely; a bloc can no longer cast nothing. BLOC_VOTE_NON_UNANIMOUS is retained in the illegal-action table as the matching diagnostic and no longer implies a lost vote.</p>
+<h2>Traitor deadlock — standing_wins by archetype (§8.2)</h2>
+<table>
+<thead><tr><th>Archetype</th><th>standing_wins</th></tr></thead>
+<tbody>
+<tr><td>A08 The Rope</td><td>2,990</td></tr>
+<tr><td>A02 The Bulldozer</td><td>2,929</td></tr>
+<tr><td>A01 The Ledger</td><td>2,414</td></tr>
+<tr><td>A06 The Surveyor</td><td>2,048</td></tr>
+<tr><td>A11 The Counterweight</td><td>2,043</td></tr>
+<tr><td>A03 The Cartographer</td><td>1,801</td></tr>
+<tr><td>A04 The Guide</td><td>1,698</td></tr>
+<tr><td>A07 The Storm-Watcher</td><td>1,178</td></tr>
+<tr><td>A12 The Warden</td><td>1,075</td></tr>
+<tr><td>A09 The Volunteer</td><td>883</td></tr>
+<tr><td>A10 The Second</td><td>682</td></tr>
+<tr><td>A05 The Cornice</td><td>500</td></tr>
+</tbody></table>
+<p class="note">Counts how often each archetype&#x27;s held murder proposal won a §8.2 deadlock by longest standing. A large gap between top and bottom indicates the mechanic has a dominant strategy (hold and don&#x27;t move).</p>
+<h2>Plate detection by archetype (§8.3)</h2>
+<table>
+<thead><tr><th>Archetype</th><th>Detections</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>A06 The Surveyor</td><td>3,028</td><td>30.3% of games</td></tr>
+<tr><td>A12 The Warden</td><td>964</td><td>9.6% of games</td></tr>
+<tr><td>A10 The Second</td><td>695</td><td>7.0% of games</td></tr>
+<tr><td>A01 The Ledger</td><td>690</td><td>6.9% of games</td></tr>
+<tr><td>A09 The Volunteer</td><td>686</td><td>6.9% of games</td></tr>
+<tr><td>A03 The Cartographer</td><td>679</td><td>6.8% of games</td></tr>
+<tr><td>A08 The Rope</td><td>677</td><td>6.8% of games</td></tr>
+<tr><td>A04 The Guide</td><td>656</td><td>6.6% of games</td></tr>
+<tr><td>A05 The Cornice</td><td>644</td><td>6.4% of games</td></tr>
+<tr><td>A07 The Storm-Watcher</td><td>643</td><td>6.4% of games</td></tr>
+<tr><td>A11 The Counterweight</td><td>636</td><td>6.4% of games</td></tr>
+<tr><td>A02 The Bulldozer</td><td>628</td><td>6.3% of games</td></tr>
+</tbody></table>
+<p class="note">For this tier, detection is a gated roll on the archetype&#x27;s `object` parameter (see heuristic_bots.py), not a reasoning trace — a deliberately different mechanism from the Claude tier&#x27;s reasoning-gated detection. Expect concentration in A06/A12, the two highest-`object` archetypes.</p>
+<h2>Float events</h2>
+<table>
+<thead><tr><th>Event</th><th>Games</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>ANCHOR_BREAK</td><td>1,759</td><td>17.6%</td></tr>
+<tr><td>SUCCESSION_ACCEPT</td><td>492</td><td>4.9%</td></tr>
+<tr><td>TRAITOR_SWEEP</td><td>1,359</td><td>13.6%</td></tr>
+<tr><td>SWEEP_NO_MURDER</td><td>955</td><td>9.6%</td></tr>
+</tbody></table>
+<p class="note">ZERO_VOTE_COUNCIL is absent because v4 removed it from the ruleset (§5.5); any occurrence would be an implementation defect and run_skeleton.check asserts its count is zero.</p>
+<h2>Traitor sweep (§9.7)</h2>
+<table>
+<thead><tr><th></th><th>Games</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>Swept to zero living Traitors</td><td>1,359</td><td>13.6%</td></tr>
+<tr><td>Murder windows voided by the sweep</td><td>955</td><td>0.10/game</td></tr>
+</tbody></table>
+<p class="note">Mean councils played after the sweep: 0.77. The game no longer ends at the sweep (v4 §9.7): play continues to RT_6, every later murder window produces no victim, and the Faithful win is declared at the finale reveal. The oversized finale that produces is the intended outcome of the branch, not drift — FINALE_OVERSIZED is suppressed for these games.</p>
+<h2>Anchor</h2>
+<table>
+<thead><tr><th>Councils before a Traitor learns the Anchor&#x27;s meaning</th><th>Games</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>0</td></tr>
+<tr><td>1</td><td>2,786</td></tr>
+<tr><td>2</td><td>1,789</td></tr>
+<tr><td>3</td><td>1,230</td></tr>
+<tr><td>4</td><td>868</td></tr>
+<tr><td>5+</td><td>0</td></tr>
+</tbody></table>
+<p class="note">Mean 2.03 councils across 6,673 games where a Traitor learned it at all.</p>
+<h2>Succession</h2>
+<table>
+<thead><tr><th></th><th>Games</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>Triggered</td><td>995</td><td>9.9%</td></tr>
+<tr><td>Accepted</td><td>492</td><td>4.9%</td></tr>
+</tbody></table>
+<h2>REF_ADJUDICATION frequency (the bug list)</h2>
+<table>
+<thead><tr><th>Tag</th><th>Count</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>SLATE_TIE_EARLIEST</td><td>43,900</td><td>4.39/game</td></tr>
+<tr><td>TRAITOR_DEADLOCK_FORCED</td><td>21,276</td><td>2.13/game</td></tr>
+<tr><td>BLOC_FORCED_BY_MEMBERSHIP</td><td>14,806</td><td>1.48/game</td></tr>
+<tr><td>TRANSMISSION_CONSENSUS_FORCED</td><td>10,000</td><td>1.00/game</td></tr>
+<tr><td>TIE_LADDER_STEP_1</td><td>5,019</td><td>0.50/game</td></tr>
+<tr><td>ANCHOR_HOLDER_BANISHED</td><td>4,007</td><td>0.40/game</td></tr>
+<tr><td>BLOC_ABSTAINS_BOTH_FINALISTS</td><td>2,597</td><td>0.26/game</td></tr>
+<tr><td>BLOC_BACKSTOP_APPLIED</td><td>2,565</td><td>0.26/game</td></tr>
+<tr><td>TIE_LADDER_STEP_2</td><td>1,910</td><td>0.19/game</td></tr>
+<tr><td>TIE_LADDER_STEP_3</td><td>1,068</td><td>0.11/game</td></tr>
+<tr><td>ROPE_TRAITOR_BLOC_OVERRIDE</td><td>759</td><td>0.08/game</td></tr>
+<tr><td>SLATE_ONLY_TWO</td><td>524</td><td>0.05/game</td></tr>
+<tr><td>SMALL_COUNT_TIE_FORCED</td><td>113</td><td>0.01/game</td></tr>
+<tr><td>TRIPLE_NIGHT_3</td><td>13</td><td>0.00/game</td></tr>
+</tbody></table>
+<h2>ILLEGAL_ACTION frequency (the ambiguity list)</h2>
+<table>
+<thead><tr><th>Tag</th><th>Count</th><th>Rate</th></tr></thead>
+<tbody>
+<tr><td>BLOC_VOTE_NON_UNANIMOUS</td><td>2,565</td><td>0.26/game</td></tr>
+</tbody></table>
+<h2>Role balance check</h2>
+<p><span class="pill ok">balanced</span> — every archetype drew Traitor within 5 points of the 25% target.</p>
+<h2>Parameter set</h2>
+<p><span class="pill bad">overridden</span> This batch did not run on the committed values. 10 parameters were replaced for this run only, and never written back to archetypes.json:</p><ul><li><code>A01.object 0.4 -&gt; 0.65</code></li><li><code>A02.object 0.2 -&gt; 0.65</code></li><li><code>A03.object 0.5 -&gt; 0.65</code></li><li><code>A04.object 0.3 -&gt; 0.65</code></li><li><code>A05.object 0.6 -&gt; 0.65</code></li><li><code>A07.object 0.5 -&gt; 0.65</code></li><li><code>A08.object 0.3 -&gt; 0.65</code></li><li><code>A09.object 0.4 -&gt; 0.65</code></li><li><code>A10.object 0.2 -&gt; 0.65</code></li><li><code>A11.object 0.4 -&gt; 0.65</code></li></ul>
+<table>
+<thead><tr><th>Archetype</th><th>volubility</th><th>trust</th><th>stubborn</th><th>record</th><th>object</th><th>disclosure</th><th>coalition</th><th>contrarian</th><th>accusation</th><th>risk</th></tr></thead>
+<tbody>
+<tr><td>A01 The Ledger</td><td>0.5</td><td>0.5</td><td>0.8</td><td>1</td><td>0.65</td><td>0.3</td><td>0.3</td><td>0.2</td><td>0.4</td><td>0.3</td></tr>
+<tr><td>A02 The Bulldozer</td><td>1</td><td>0.3</td><td>0.9</td><td>0.3</td><td>0.65</td><td>0.5</td><td>0.4</td><td>0.1</td><td>1</td><td>0.7</td></tr>
+<tr><td>A03 The Cartographer</td><td>0.15</td><td>0.5</td><td>0.6</td><td>0.8</td><td>0.65</td><td>0.1</td><td>0.2</td><td>0.3</td><td>0.1</td><td>0.2</td></tr>
+<tr><td>A04 The Guide</td><td>0.7</td><td>0.8</td><td>0.6</td><td>0.4</td><td>0.65</td><td>0.9</td><td>1</td><td>0.1</td><td>0.3</td><td>0.4</td></tr>
+<tr><td>A05 The Cornice</td><td>0.6</td><td>0.4</td><td>0.1</td><td>0.1</td><td>0.65</td><td>0.6</td><td>0.1</td><td>0.7</td><td>0.5</td><td>0.9</td></tr>
+<tr><td>A06 The Surveyor</td><td>0.6</td><td>0.5</td><td>0.7</td><td>0.9</td><td>1</td><td>0.2</td><td>0.2</td><td>0.4</td><td>0.3</td><td>0.5</td></tr>
+<tr><td>A07 The Storm-Watcher</td><td>0.8</td><td>0.1</td><td>0.4</td><td>0.5</td><td>0.65</td><td>0.3</td><td>0.2</td><td>0.5</td><td>0.9</td><td>0.6</td></tr>
+<tr><td>A08 The Rope</td><td>0.5</td><td>0.9</td><td>0.9</td><td>0.3</td><td>0.65</td><td>0.8</td><td>0.8</td><td>0.2</td><td>0.2</td><td>0.3</td></tr>
+<tr><td>A09 The Volunteer</td><td>0.6</td><td>0.7</td><td>0.3</td><td>0.4</td><td>0.65</td><td>0.7</td><td>0.5</td><td>0.3</td><td>0.2</td><td>0.8</td></tr>
+<tr><td>A10 The Second</td><td>0.4</td><td>0.6</td><td>0.2</td><td>0.6</td><td>0.65</td><td>0.5</td><td>0.9</td><td>0</td><td>0.2</td><td>0.3</td></tr>
+<tr><td>A11 The Counterweight</td><td>0.7</td><td>0.4</td><td>0.7</td><td>0.7</td><td>0.65</td><td>0.3</td><td>0.1</td><td>1</td><td>0.6</td><td>0.6</td></tr>
+<tr><td>A12 The Warden</td><td>0.6</td><td>0.7</td><td>0.4</td><td>0.2</td><td>0.7</td><td>0.6</td><td>0.4</td><td>0.6</td><td>0.3</td><td>0.4</td></tr>
+</tbody></table>
+<p class="note">Digest 6f4d179c. Two batches with the same digest ran on the same numbers, whatever archetypes.json said at the time. These values are heuristic_bots.py&#x27;s inputs; that file is explicit that its parameter-to-decision mapping is a modeling choice, so changing a number here changes what the model does, not what a person with that temperament would do.</p>
+<h2>Elimination timing</h2>
+<table>
+<thead><tr><th>Phase</th><th>Eliminations</th><th>Per game</th><th>Murdered</th><th>Banished</th><th>Were Traitor</th><th>Were Faithful</th></tr></thead>
+<tbody>
+<tr><td>NIGHT_1</td><td>9,241</td><td>0.92</td><td>9,241</td><td>0</td><td>0</td><td>9,241</td></tr>
+<tr><td>RT_1</td><td>10,000</td><td>1.00</td><td>0</td><td>10,000</td><td>955</td><td>9,045</td></tr>
+<tr><td>RT_2</td><td>10,000</td><td>1.00</td><td>0</td><td>10,000</td><td>1,181</td><td>8,819</td></tr>
+<tr><td>RT_3</td><td>10,000</td><td>1.00</td><td>0</td><td>10,000</td><td>1,243</td><td>8,757</td></tr>
+<tr><td>SAT_DINNER</td><td>8,842</td><td>0.88</td><td>8,842</td><td>0</td><td>390</td><td>8,452</td></tr>
+<tr><td>RT_4</td><td>10,000</td><td>1.00</td><td>0</td><td>10,000</td><td>1,726</td><td>8,274</td></tr>
+<tr><td>RT_5</td><td>10,000</td><td>1.00</td><td>0</td><td>10,000</td><td>1,488</td><td>8,512</td></tr>
+<tr><td>NIGHT_3</td><td>10,962</td><td>1.10</td><td>10,962</td><td>0</td><td>0</td><td>10,962</td></tr>
+<tr><td>RT_6_FINALE</td><td>13,931</td><td>1.39</td><td>0</td><td>13,931</td><td>3,235</td><td>10,696</td></tr>
+</tbody></table>
+<p class="note">Read from the referee&#x27;s own eliminated_at/eliminated_by fields, not inferred — unlike the reasoning report&#x27;s timeline, which reconstructs this from trace continuity because the event transcript isn&#x27;t persisted.</p>
+<h2>Invariant check</h2>
+<p><span class="pill ok">zero invariant violations across 10,000 games</span> — run_skeleton.check() ran on every game.</p>
+<footer class="page">Generated by the Lodge simulation harness. Self-contained — no external assets.</footer>
+</div>
+</body>
+</html>
