@@ -192,15 +192,47 @@ h3.datehead { color: var(--ink-soft); font-size: 0.92rem; margin: 1.4rem 0 0.3re
 <body>
 <header class="page"><div class="wrap">
   <h1>The Lodge — Reports</h1>
-  <div class="meta">Every batch the simulation has produced &middot; generated 2026-07-27 17:51 UTC</div>
+  <div class="meta">Every batch the simulation has produced &middot; generated 2026-07-27 18:19 UTC</div>
 </div></header>
 <div class="wrap">
-<div class="summary">2 reports (1 structural, 1 reasoning), latest 2026-07-22. No batches logged in <a href="history.json">history.json</a> yet.</div>
+<div class="summary">3 reports (2 structural, 1 reasoning), latest 2026-07-27. 1 batch logged in <a href="history.json">history.json</a>, $0.00 of API spend recorded.</div>
 <div class="disclaimer"><strong>The two kinds of row are not the same measurement.</strong> Structural rows are thousands of heuristic-bot games — deterministic rules built from the archetypes' declared parameters, answering "how often" at volume. Reasoning rows are a handful of real Claude-agent games, kept small because they cost real money, and they exist to answer "why" in a specific game. Reading a rate off a two-game reasoning row, or treating a gap between the two kinds as a finding, is a mistake the reports themselves warn about at more length. The columns line up so the same mechanic can be located in both, not so the numbers can be subtracted.</div>
 <div class="controls"><span class="label">Show</span><button class="filter" data-kind="all" aria-pressed="true">All</button><button class="filter" data-kind="structural" aria-pressed="false">Structural</button><button class="filter" data-kind="reasoning" aria-pressed="false">Reasoning</button></div>
 <h2>Batch history</h2>
-<p class="empty">No batch rows yet. reports/history.json gets its first row the next time either workflow runs; reports produced before the workflows existed are listed below but have no metrics recorded.</p>
+<div class="scroll"><table id="history-table"><thead><tr>
+<th class="sortable">Report</th>
+<th class="sortable">Date</th>
+<th class="sortable">Kind</th>
+<th class="sortable num">Games</th>
+<th class="sortable">Model</th>
+<th class="sortable num">Traitor win</th>
+<th class="sortable num">Final 2</th>
+<th class="sortable num">Rope raised</th>
+<th class="sortable num">Bloc non-unanimous /game</th>
+<th class="sortable num">Plate detect /game</th>
+<th class="sortable num">Invariants</th>
+<th class="sortable num">Cost</th>
+</tr></thead><tbody>
+<tr data-kind="structural">
+<td data-sort="2026-07-27T18:19:44Z"><a href="structural_2026-07-27.html">structural_2026-07-27.html</a> <a class="sub" href="https://github.com/hjclancy/lodge-sim/actions/runs/30293232107" title="workflow run">&#8599;</a></td>
+<td data-sort="2026-07-27">2026-07-27</td>
+<td data-sort="structural"><span class="kind structural">Structural</span></td>
+<td class="num" data-sort="5000">5,000</td>
+<td data-sort="heuristic-bots">heuristic-bots</td>
+<td class="num" data-sort="88.06">88.1%</td>
+<td class="num" data-sort="22.66">22.7%</td>
+<td class="num" data-sort="100.0">100.0%</td>
+<td class="num" data-sort="2.0926">2.09</td>
+<td class="num" data-sort="0.4468">0.45</td>
+<td class="num" data-sort="0">0</td>
+<td class="num" data-sort="0.0">$0</td>
+</tr>
+</tbody></table></div>
+<p class="note">Click a column to sort; the table scrolls sideways on narrow screens. Anchor breaks, zero-vote councils, succession rates, wall-clock time and the full ending distribution are recorded on every row but have no column &mdash; they are in <a href="history.json">history.json</a>.</p>
 <h2>All reports</h2>
+<h3 class="datehead">2026-07-27</h3><ul class="reports">
+<li data-kind="structural"><span class="kind structural">Structural</span><a href="structural_2026-07-27.html">Lodge structural report (5000 games)</a><span class="sub">structural_2026-07-27.html &middot; 5,000 games &middot; heuristic-bots &middot; 11 KB</span></li>
+</ul>
 <h3 class="datehead">2026-07-22</h3><ul class="reports">
 <li data-kind="structural"><span class="kind structural">Structural</span><a href="structural_2026-07-22.html">Lodge structural report (5000 games)</a><span class="sub">structural_2026-07-22.html &middot; 11 KB</span></li>
 <li data-kind="reasoning"><span class="kind reasoning">Reasoning</span><a href="reasoning_2026-07-22.html">Lodge reasoning report (N=2)</a><span class="sub">reasoning_2026-07-22.html &middot; 24 KB</span></li>
