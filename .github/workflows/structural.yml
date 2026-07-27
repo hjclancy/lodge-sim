@@ -11,6 +11,11 @@ on:
         required: true
         default: "5000"
         type: number
+      archetype_overrides:
+        description: 'Optional JSON overriding archetype parameters for this run only, e.g. {"A03":{"trust":0.8}}. Build it on the dashboard''s Parameters page. Blank = the committed archetypes.json.'
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -58,6 +63,29 @@ jobs:
           fi
           echo "games=$games" >> "$GITHUB_OUTPUT"
 
+      # Written to RUNNER_TEMP, deliberately outside the checkout: the override
+      # applies to this run and cannot end up in the commit. archetypes.py does
+      # the real validation (unknown id, unknown parameter, out of range) and
+      # raises rather than silently ignoring a typo — this step only checks it
+      # is JSON at all, so a malformed paste fails before the harness starts.
+      - name: Stage archetype overrides
+        env:
+          OVERRIDES_INPUT: ${{ inputs.archetype_overrides }}
+        run: |
+          if [ -z "$(printf '%s' "$OVERRIDES_INPUT" | tr -d '[:space:]')" ]; then
+            echo "no overrides — running on the committed archetypes.json"
+            exit 0
+          fi
+          target="$RUNNER_TEMP/archetype_overrides.json"
+          printf '%s' "$OVERRIDES_INPUT" > "$target"
+          if ! python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$target"; then
+            echo "::error::archetype_overrides is not valid JSON"
+            exit 1
+          fi
+          echo "LODGE_ARCHETYPE_OVERRIDES=$target" >> "$GITHUB_ENV"
+          echo "overrides staged:"
+          cat "$target"
+
       # continue-on-error so the report still gets committed when the harness
       # exits non-zero on an invariant violation — that report is exactly the
       # one worth keeping. The run is failed at the end instead.
@@ -68,7 +96,7 @@ jobs:
           set -o pipefail
           python3 scripts/run_structural_ci.py --games "${{ steps.cfg.outputs.games }}" 2>&1 | tee run.log
 
-      - name: Rebuild reports index
+      - name: Rebuild dashboard
         run: python3 scripts/make_index.py
 
       - name: Commit results to main

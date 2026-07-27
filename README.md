@@ -13,6 +13,14 @@ Exit 0 = all invariants held.
     python3 run_structural.py                 # 5000 games, $0, ~8s
     python3 run_structural.py --games 20000
 
+The twelve archetypes' ten parameters live in `archetypes.json`; `archetypes.py`
+loads them at import and keeps the prose personas. To run one batch on different
+numbers without committing them, set `LODGE_ARCHETYPE_OVERRIDES` to a JSON object
+(or a path to one) shaped like `{"A03": {"trust": 0.8}}`. A typo — unknown
+archetype, unknown parameter, a value outside [0, 1] — raises rather than being
+ignored, because a silently dropped override produces a report that looks like a
+finding and isn't. Every report records the exact set it ran on, with a digest.
+
 Deterministic archetype-parameter bots (`heuristic_bots.py`), not random and
 not reasoning — a modeling choice, explicitly flagged as such at the top of
 that file. Runs through the unmodified referee at volumes the Claude tier
@@ -64,7 +72,7 @@ fill the inputs → **Run workflow**.
 
 | workflow | inputs | needs a key | cost | takes |
 |---|---|---|---|---|
-| **Structural report (heuristic bots)** | `games` (default 5000) | no | $0 | ~1 min |
+| **Structural report (heuristic bots)** | `games` (default 5000), `archetype_overrides` (optional JSON) | no | $0 | ~1 min |
 | **Reasoning report (Sonnet batch)** | `games` (default 2), `budget` (default 10), `mock` (default false) | yes | up to `budget` | ~15 min/game |
 
 Each run appends a report to `reports/`, appends a row to
@@ -78,6 +86,26 @@ the run summary page along with the Pages link.
 Set `mock: true` on the reasoning workflow to test the plumbing with
 `llm.MockLLM` — zero API calls, zero dollars, no key required. It commits
 nothing and publishes nothing; its output comes back as a run artifact.
+
+### Re-parameterising a run
+The structural workflow's `archetype_overrides` box takes JSON that replaces
+archetype parameters **for that run only**. Nothing is written back to
+`archetypes.json`, no commit is made, and the next run without an override is on
+the committed defaults again. The value is staged to the runner's temp directory,
+outside the checkout, so it cannot reach a commit even by accident.
+
+Build the JSON on the dashboard's **Parameters** page — move sliders, press *Copy
+config JSON*, paste. It copies only what you moved, which is what the input wants
+and what keeps the report's override list readable. The report for that run names
+every replaced parameter and records a digest of the whole set; the history table
+carries the digest in its **Params** column, so two batches that differ only in
+parameters can be told apart later.
+
+Overrides bite hard on the structural tier and barely at all on the reasoning
+tier: heuristic bots *are* these numbers, whereas the Claude agents read the prose
+persona plus a one-line rendering of them. There is deliberately no override input
+on the reasoning workflow — it would cost $10 to move a number that changes one
+line of a prompt.
 
 ### The budget cap
 `budget` is a ceiling on the whole run, both the agent games and the
@@ -106,11 +134,27 @@ calibration: the 2026-07-22 Sonnet 5 batch cost **$2.50–$3.20 per game** at
 `https://<owner>.github.io/lodge-sim/`
 
 The exact URL is on **Settings → Pages**, on every workflow run summary, and
-on the *github-pages* deployment in the Actions sidebar. It serves
-`reports/index.html`: every report listed by date with links, plus
-`history.json` rendered as a sortable table so metrics can be compared across
-batches. The two kinds of row are not the same measurement and the page says
-so at length — see the caveat on it.
+on the *github-pages* deployment in the Actions sidebar.
+
+Four pages, each a single self-contained file:
+
+| page | what's on it |
+|---|---|
+| **Reports** (`index.html`) | every report by date with links, the history table, and a line chart of any metrics you tick across every batch |
+| **Charts** (`charts.html`) | pick a batch: archetype survival by role, elimination timing by phase, plate detection by archetype, float event rates |
+| **Parameters** (`params.html`) | 12 × 10 sliders, *Copy config JSON*, *Reset to defaults* |
+| **Traces** (`trace.html`) | any published game's decision timeline, filtered by player, phase or tag, with the full reasoning text |
+
+Each reasoning report links per game straight into the trace viewer, and each
+report with exported data links to its charts from the reports list.
+
+Two notes on how this is built. Charts use Chart.js from a CDN — the only
+external request the site makes; if it is blocked, the pages say so rather than
+showing empty boxes, and the same numbers are in the report tables. And
+`charts.html` and `trace.html` read their data with `fetch`, which browsers
+refuse on `file://` URLs, so opening those two from disk shows an explanatory
+message: to preview locally, run `python3 -m http.server` inside `reports/`.
+`index.html` and `params.html` inline everything and work from disk.
 
 ### One-time setup
 **Pages.** Settings → Pages → **Source: GitHub Actions**. Branch-based Pages
@@ -136,7 +180,8 @@ secret — nothing else refers to the key.
 | `heuristic_bots.py` | archetype-parameter-driven agents (stage 1.5) — a modeling choice, not ground truth. |
 | `run_structural.py` | stage-1.5 harness + HTML report generator. |
 | `report_common.py` | shared HTML shell/CSS for the structural and reasoning reports. |
-| `archetypes.py` | the twelve personas as data. |
+| `archetypes.py` | the twelve personas — prose here, numbers loaded from `archetypes.json`, plus override parsing and the parameter-set digest. |
+| `archetypes.json` | the ten parameters for each of the twelve archetypes. The only file to edit to change them for good. |
 | `agents_claude.py` | Claude-backed agents implementing the protocol. |
 | `llm.py` | API client, JSON contract, retry, cost accounting, MockLLM. |
 | `run_agents.py` | stage-2 harness + archetype reporting. |
@@ -146,11 +191,16 @@ secret — nothing else refers to the key.
 | `traces_mock/` | default output for `--mock` runs — kept separate so plumbing tests never overwrite real trace data. |
 | `traces_ci/` | traces from Actions runs of the reasoning workflow, one directory per batch. |
 | `reports/` | standalone HTML reports — `structural_<date>.html` (heuristic bots) and `reasoning_<date>.html` (Claude narrative reads of real games). Published as the Pages site. |
-| `reports/index.html` | generated landing page: every report by date, plus the history table. |
+| `reports/index.html` | generated landing page: reports by date, history table, cross-batch line chart. |
+| `reports/charts.html`, `params.html`, `trace.html` | the other three dashboard pages. All four are generated — edit the builders, not the HTML. |
 | `reports/history.json` | one row per batch — the metrics the index table compares. |
-| `scripts/run_structural_ci.py` | CI wrapper: imports run_structural's own run/render, adds a collision-free filename, a history row, and a `--games` clamp. |
-| `scripts/run_reasoning_ci.py` | CI wrapper: stages 2 and 3 in one process under one USD ceiling, plus `--mock`. |
-| `scripts/make_index.py` | builds `reports/index.html` from the directory and `history.json`. |
+| `reports/data/` | per-batch chart series (`<report>.json`) and published traces (`traces/<report>/`). Under `reports/` because Pages serves nothing else. |
+| `scripts/run_structural_ci.py` | CI wrapper: imports run_structural's own run/render, adds a collision-free filename, a history row, chart data, and a `--games` clamp. |
+| `scripts/run_reasoning_ci.py` | CI wrapper: stages 2 and 3 in one process under one USD ceiling, publishes traces, plus `--mock`. |
+| `scripts/make_index.py` | builds all four dashboard pages from what is on disk. |
+| `scripts/dashboard.py` | shared page shell, nav, palette, Chart.js loader, fetch helper. |
+| `scripts/page_charts.py`, `page_params.py`, `page_trace.py` | the three non-index pages. |
+| `scripts/publish_traces.py` | copies traces into `reports/data/traces/` for the viewer; also a CLI for importing an older run's traces. |
 | `scripts/report_history.py` | the `history.json` schema, and which of its fields get a column. |
 | `.github/workflows/` | `structural.yml`, `reasoning.yml`, and the `pages.yml` they call to publish. |
 

@@ -10,7 +10,7 @@
       "model": "heuristic-bots",
       "cost_usd": 0.0,
       "elapsed_s": 8.1,
-      "notes": "",
+      "notes": "parameter fields added after the run: archetypes.py at commit 48af84a held exactly the values now in archetypes.json, checked by digest, so this batch provably ran on ff187ff2",
       "traitor_win_pct": 88.06,
       "faithful_win_pct": 11.94,
       "final_2_pct": 22.66,
@@ -26,7 +26,10 @@
       "succession_accept_pct": 5.58,
       "invariant_violations": 0,
       "commit": "48af84a",
-      "run_url": "https://github.com/hjclancy/lodge-sim/actions/runs/30293232107"
+      "run_url": "https://github.com/hjclancy/lodge-sim/actions/runs/30293232107",
+      "params_digest": "ff187ff2",
+      "params_summary": "defaults ff187ff2",
+      "params_overrides": []
     }
   ]
 }

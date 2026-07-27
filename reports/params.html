@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lodge — Archetype parameters</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8F%94%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --ink: #2a2622;
+  --ink-soft: #5a5349;
+  --paper: #faf7f0;
+  --panel: #ffffff;
+  --line: #e2dccd;
+  --accent: #6b3f2a;
+  --accent-soft: #9c6b4c;
+  --disclaimer-bg: #fff3d6;
+  --disclaimer-border: #c9962f;
+  --good: #3f6b3f;
+  --bad: #a13b3b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 0 0 4rem 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Georgia, "Iowan Old Style", serif;
+  line-height: 1.55;
+}
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+header.page {
+  background: var(--accent);
+  color: #fbf3e6;
+  padding: 2.2rem 0 1.6rem 0;
+  margin-bottom: 2rem;
+}
+header.page .wrap h1 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+header.page .wrap .meta {
+  color: #ecd9bd;
+  font-size: 0.95rem;
+}
+h2 {
+  font-size: 1.25rem;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 0.35rem;
+  margin-top: 2.4rem;
+}
+h3 {
+  font-size: 1.05rem;
+  color: var(--accent);
+  margin-top: 1.6rem;
+}
+p { max-width: 72ch; }
+.summary {
+  font-size: 1.08rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 1.1rem 1.3rem;
+}
+.disclaimer {
+  background: var(--disclaimer-bg);
+  border-left: 5px solid var(--disclaimer-border);
+  border-radius: 4px;
+  padding: 1rem 1.3rem;
+  margin: 1.4rem 0;
+  font-size: 0.98rem;
+}
+.disclaimer strong { color: #6b4c00; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.8rem 0 1.6rem 0;
+  background: var(--panel);
+  font-size: 0.95rem;
+}
+caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent);
+  padding-bottom: 0.3rem;
+}
+th, td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.75rem;
+  text-align: right;
+}
+th:first-child, td:first-child { text-align: left; }
+thead th {
+  background: #f1e9d8;
+  color: var(--ink);
+  font-weight: 600;
+}
+tbody tr:nth-child(even) { background: #fbf8f1; }
+.note {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  margin: -0.9rem 0 1.6rem 0;
+}
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.pill.ok { background: #e2ecdd; color: var(--good); }
+.pill.bad { background: #f4dede; color: var(--bad); }
+footer.page {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ece6d9;
+    --ink-soft: #b8b0a0;
+    --paper: #201d18;
+    --panel: #2a2620;
+    --line: #453f34;
+    --accent: #d99b6c;
+    --accent-soft: #c98a58;
+    --disclaimer-bg: #3a2f14;
+    --disclaimer-border: #d9a53a;
+    --good: #8fbf8f;
+    --bad: #e08a8a;
+  }
+  header.page { background: #3a2416; color: #f3e6d4; }
+  header.page .wrap .meta { color: #d9c2a0; }
+  thead th { background: #362f22; }
+  tbody tr:nth-child(even) { background: #262219; }
+  .disclaimer strong { color: #f0c874; }
+}
+
+.wrap { max-width: 1180px; }
+.prose, .summary, .disclaimer, footer.page { max-width: 80ch; }
+a { color: var(--accent); }
+nav.site {
+  background: var(--panel); border-bottom: 1px solid var(--line);
+  margin-bottom: 2rem; position: sticky; top: 0; z-index: 5;
+}
+nav.site .wrap { display: flex; gap: 0.3rem; flex-wrap: wrap; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+nav.site a {
+  padding: 0.35rem 0.85rem; border-radius: 6px; text-decoration: none;
+  color: var(--ink-soft); font-size: 0.92rem; font-weight: 600;
+}
+nav.site a:hover { background: var(--paper); color: var(--accent); }
+nav.site a[aria-current="page"] { background: var(--accent); color: #fbf3e6; }
+header.page { margin-bottom: 0; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
+.scroll table { margin: 0; font-size: 0.88rem; }
+.scroll th, .scroll td { padding: 0.42rem 0.6rem; }
+.scroll + p.note { margin-top: 0.3rem; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.kind { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 999px;
+        font-size: 0.78rem; font-weight: 600; border: 1px solid var(--line); }
+.kind.structural { background: #e6edf5; color: #2f4a6b; }
+.kind.reasoning  { background: #f0e8f5; color: #573b6b; }
+.kind.other      { background: #ece9e2; color: var(--ink-soft); }
+.controls { margin: 1.2rem 0 0.8rem 0; display: flex; gap: 0.5rem;
+            flex-wrap: wrap; align-items: center; }
+.controls .label { font-size: 0.85rem; color: var(--ink-soft); }
+button.btn, select.ctl, input.ctl {
+  font: inherit; font-size: 0.88rem; padding: 0.3rem 0.8rem;
+  border-radius: 6px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink);
+}
+button.btn { cursor: pointer; font-weight: 600; }
+button.btn:hover { border-color: var(--accent); color: var(--accent); }
+button.btn.primary { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
+button.btn.primary:hover { color: #fff; opacity: 0.92; }
+button.btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
+.chartbox {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 1rem 1.1rem 0.8rem 1.1rem; margin: 0.6rem 0 1.6rem 0;
+}
+.chartbox h3 { margin: 0 0 0.2rem 0; color: var(--accent); font-size: 1rem; }
+.chartbox .cap { color: var(--ink-soft); font-size: 0.85rem; margin: 0 0 0.7rem 0; max-width: 78ch; }
+.chartwrap { position: relative; height: 340px; }
+.banner {
+  border-radius: 6px; padding: 0.8rem 1.1rem; margin: 1rem 0;
+  border-left: 5px solid var(--disclaimer-border); background: var(--disclaimer-bg);
+  font-size: 0.95rem;
+}
+.banner.hidden { display: none; }
+.empty { color: var(--ink-soft); font-style: italic; }
+code { font-size: 0.9em; background: rgba(127,127,127,0.13); padding: 0.05rem 0.3rem; border-radius: 3px; }
+pre.code {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.45;
+}
+@media (prefers-color-scheme: dark) {
+  .kind.structural { background: #24313f; color: #a8c6e6; }
+  .kind.reasoning  { background: #332a3d; color: #d0b3e6; }
+  .kind.other      { background: #322d25; color: var(--ink-soft); }
+}
+
+.arch { border: 1px solid var(--line); background: var(--panel); border-radius: 8px;
+        padding: 0.9rem 1.1rem; margin-bottom: 0.9rem; }
+.arch > header { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
+                 margin-bottom: 0.6rem; }
+.arch h3 { margin: 0; font-size: 1rem; color: var(--accent); }
+.arch .aid { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+             font-size: 0.85rem; color: var(--ink-soft); }
+.arch .changed-count { margin-left: auto; font-size: 0.82rem; color: var(--ink-soft); }
+.arch.dirty { border-color: var(--accent); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 0.35rem 1.4rem; }
+.row { display: grid; grid-template-columns: 6.5rem 1fr 3.2rem; align-items: center;
+       gap: 0.5rem; padding: 0.15rem 0; }
+.row label { font-size: 0.85rem; color: var(--ink-soft); }
+.row.dirty label { color: var(--accent); font-weight: 600; }
+.row output { font-size: 0.85rem; text-align: right; font-variant-numeric: tabular-nums; }
+.row .dot { display: none; }
+.row.dirty output::after { content: " •"; color: var(--accent); }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.sticky-actions {
+  position: sticky; bottom: 0; background: var(--paper);
+  border-top: 1px solid var(--line); padding: 0.7rem 0; margin-top: 1rem;
+  display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; z-index: 4;
+}
+.sticky-actions .status { font-size: 0.86rem; color: var(--ink-soft); }
+.copied { color: var(--good); font-weight: 600; }
+details.preview { margin-top: 0.8rem; }
+details.preview summary { cursor: pointer; font-size: 0.9rem; color: var(--accent); }
+</style>
+</head>
+<body>
+<header class="page"><div class="wrap">
+  <h1>The Lodge — Archetype parameters</h1>
+  <div class="meta">twelve archetypes &times; ten parameters &middot; committed defaults, digest ff187ff2</div>
+</div></header>
+<nav class="site"><div class="wrap"><a href="index.html">Reports</a><a href="charts.html">Charts</a><a href="params.html" aria-current="page">Parameters</a><a href="trace.html">Traces</a></div></nav>
+<div class="wrap">
+
+<div class="prose">
+<h2>What to do with these</h2>
+<p>Move any sliders, press <strong>Copy config JSON</strong>, then go to
+<strong>Actions → Structural report (heuristic bots) → Run workflow</strong> and paste
+into the <code>archetype_overrides</code> box. That run uses your numbers and nothing
+else changes: the file in the repository is not touched, no commit is made, and the
+next run without an override is back on the committed defaults.</p>
+<p>The copied JSON holds only the parameters you actually moved — that is the shape
+the input expects, and it keeps the report's override list readable. The report for
+that run states which parameters were replaced and records a digest of the exact set
+used, so a batch can be told apart from its neighbours later. To change the defaults
+for good instead, use <strong>Copy full file</strong> and replace
+<code>archetypes.json</code> in the repository.</p>
+<p>What the ten parameters mean is <code>archetypes_v1.md</code>'s subject.
+What they <em>do</em> is <code>heuristic_bots.py</code>'s, and that file is explicit
+that its mapping from parameter to decision is one implementer's modeling choice.
+Moving a slider changes how those bots behave; it does not discover anything about
+how a person with that temperament would play. The Claude agents read only the
+prose persona and a one-line rendering of these numbers, so overrides move the
+heuristic tier hard and the reasoning tier barely at all.</p>
+</div>
+
+<h2>The twelve archetypes</h2>
+<section class="arch" id="card-A01"><header><h3>The Ledger</h3><span class="aid">A01</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A01-volubility"><label for="in-A01-volubility">volubility</label><input class="ctl" type="range" id="in-A01-volubility" min="0" max="1" step="0.01" value="0.5" data-aid="A01" data-key="volubility" aria-label="A01 volubility"><output id="out-A01-volubility">0.50</output></div><div class="row" id="row-A01-trust"><label for="in-A01-trust">trust</label><input class="ctl" type="range" id="in-A01-trust" min="0" max="1" step="0.01" value="0.5" data-aid="A01" data-key="trust" aria-label="A01 trust"><output id="out-A01-trust">0.50</output></div><div class="row" id="row-A01-stubborn"><label for="in-A01-stubborn">stubborn</label><input class="ctl" type="range" id="in-A01-stubborn" min="0" max="1" step="0.01" value="0.8" data-aid="A01" data-key="stubborn" aria-label="A01 stubborn"><output id="out-A01-stubborn">0.80</output></div><div class="row" id="row-A01-record"><label for="in-A01-record">record</label><input class="ctl" type="range" id="in-A01-record" min="0" max="1" step="0.01" value="1.0" data-aid="A01" data-key="record" aria-label="A01 record"><output id="out-A01-record">1.00</output></div><div class="row" id="row-A01-object"><label for="in-A01-object">object</label><input class="ctl" type="range" id="in-A01-object" min="0" max="1" step="0.01" value="0.4" data-aid="A01" data-key="object" aria-label="A01 object"><output id="out-A01-object">0.40</output></div><div class="row" id="row-A01-disclosure"><label for="in-A01-disclosure">disclosure</label><input class="ctl" type="range" id="in-A01-disclosure" min="0" max="1" step="0.01" value="0.3" data-aid="A01" data-key="disclosure" aria-label="A01 disclosure"><output id="out-A01-disclosure">0.30</output></div><div class="row" id="row-A01-coalition"><label for="in-A01-coalition">coalition</label><input class="ctl" type="range" id="in-A01-coalition" min="0" max="1" step="0.01" value="0.3" data-aid="A01" data-key="coalition" aria-label="A01 coalition"><output id="out-A01-coalition">0.30</output></div><div class="row" id="row-A01-contrarian"><label for="in-A01-contrarian">contrarian</label><input class="ctl" type="range" id="in-A01-contrarian" min="0" max="1" step="0.01" value="0.2" data-aid="A01" data-key="contrarian" aria-label="A01 contrarian"><output id="out-A01-contrarian">0.20</output></div><div class="row" id="row-A01-accusation"><label for="in-A01-accusation">accusation</label><input class="ctl" type="range" id="in-A01-accusation" min="0" max="1" step="0.01" value="0.4" data-aid="A01" data-key="accusation" aria-label="A01 accusation"><output id="out-A01-accusation">0.40</output></div><div class="row" id="row-A01-risk"><label for="in-A01-risk">risk</label><input class="ctl" type="range" id="in-A01-risk" min="0" max="1" step="0.01" value="0.3" data-aid="A01" data-key="risk" aria-label="A01 risk"><output id="out-A01-risk">0.30</output></div></div></section>
+<section class="arch" id="card-A02"><header><h3>The Bulldozer</h3><span class="aid">A02</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A02-volubility"><label for="in-A02-volubility">volubility</label><input class="ctl" type="range" id="in-A02-volubility" min="0" max="1" step="0.01" value="1.0" data-aid="A02" data-key="volubility" aria-label="A02 volubility"><output id="out-A02-volubility">1.00</output></div><div class="row" id="row-A02-trust"><label for="in-A02-trust">trust</label><input class="ctl" type="range" id="in-A02-trust" min="0" max="1" step="0.01" value="0.3" data-aid="A02" data-key="trust" aria-label="A02 trust"><output id="out-A02-trust">0.30</output></div><div class="row" id="row-A02-stubborn"><label for="in-A02-stubborn">stubborn</label><input class="ctl" type="range" id="in-A02-stubborn" min="0" max="1" step="0.01" value="0.9" data-aid="A02" data-key="stubborn" aria-label="A02 stubborn"><output id="out-A02-stubborn">0.90</output></div><div class="row" id="row-A02-record"><label for="in-A02-record">record</label><input class="ctl" type="range" id="in-A02-record" min="0" max="1" step="0.01" value="0.3" data-aid="A02" data-key="record" aria-label="A02 record"><output id="out-A02-record">0.30</output></div><div class="row" id="row-A02-object"><label for="in-A02-object">object</label><input class="ctl" type="range" id="in-A02-object" min="0" max="1" step="0.01" value="0.2" data-aid="A02" data-key="object" aria-label="A02 object"><output id="out-A02-object">0.20</output></div><div class="row" id="row-A02-disclosure"><label for="in-A02-disclosure">disclosure</label><input class="ctl" type="range" id="in-A02-disclosure" min="0" max="1" step="0.01" value="0.5" data-aid="A02" data-key="disclosure" aria-label="A02 disclosure"><output id="out-A02-disclosure">0.50</output></div><div class="row" id="row-A02-coalition"><label for="in-A02-coalition">coalition</label><input class="ctl" type="range" id="in-A02-coalition" min="0" max="1" step="0.01" value="0.4" data-aid="A02" data-key="coalition" aria-label="A02 coalition"><output id="out-A02-coalition">0.40</output></div><div class="row" id="row-A02-contrarian"><label for="in-A02-contrarian">contrarian</label><input class="ctl" type="range" id="in-A02-contrarian" min="0" max="1" step="0.01" value="0.1" data-aid="A02" data-key="contrarian" aria-label="A02 contrarian"><output id="out-A02-contrarian">0.10</output></div><div class="row" id="row-A02-accusation"><label for="in-A02-accusation">accusation</label><input class="ctl" type="range" id="in-A02-accusation" min="0" max="1" step="0.01" value="1.0" data-aid="A02" data-key="accusation" aria-label="A02 accusation"><output id="out-A02-accusation">1.00</output></div><div class="row" id="row-A02-risk"><label for="in-A02-risk">risk</label><input class="ctl" type="range" id="in-A02-risk" min="0" max="1" step="0.01" value="0.7" data-aid="A02" data-key="risk" aria-label="A02 risk"><output id="out-A02-risk">0.70</output></div></div></section>
+<section class="arch" id="card-A03"><header><h3>The Cartographer</h3><span class="aid">A03</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A03-volubility"><label for="in-A03-volubility">volubility</label><input class="ctl" type="range" id="in-A03-volubility" min="0" max="1" step="0.01" value="0.15" data-aid="A03" data-key="volubility" aria-label="A03 volubility"><output id="out-A03-volubility">0.15</output></div><div class="row" id="row-A03-trust"><label for="in-A03-trust">trust</label><input class="ctl" type="range" id="in-A03-trust" min="0" max="1" step="0.01" value="0.5" data-aid="A03" data-key="trust" aria-label="A03 trust"><output id="out-A03-trust">0.50</output></div><div class="row" id="row-A03-stubborn"><label for="in-A03-stubborn">stubborn</label><input class="ctl" type="range" id="in-A03-stubborn" min="0" max="1" step="0.01" value="0.6" data-aid="A03" data-key="stubborn" aria-label="A03 stubborn"><output id="out-A03-stubborn">0.60</output></div><div class="row" id="row-A03-record"><label for="in-A03-record">record</label><input class="ctl" type="range" id="in-A03-record" min="0" max="1" step="0.01" value="0.8" data-aid="A03" data-key="record" aria-label="A03 record"><output id="out-A03-record">0.80</output></div><div class="row" id="row-A03-object"><label for="in-A03-object">object</label><input class="ctl" type="range" id="in-A03-object" min="0" max="1" step="0.01" value="0.5" data-aid="A03" data-key="object" aria-label="A03 object"><output id="out-A03-object">0.50</output></div><div class="row" id="row-A03-disclosure"><label for="in-A03-disclosure">disclosure</label><input class="ctl" type="range" id="in-A03-disclosure" min="0" max="1" step="0.01" value="0.1" data-aid="A03" data-key="disclosure" aria-label="A03 disclosure"><output id="out-A03-disclosure">0.10</output></div><div class="row" id="row-A03-coalition"><label for="in-A03-coalition">coalition</label><input class="ctl" type="range" id="in-A03-coalition" min="0" max="1" step="0.01" value="0.2" data-aid="A03" data-key="coalition" aria-label="A03 coalition"><output id="out-A03-coalition">0.20</output></div><div class="row" id="row-A03-contrarian"><label for="in-A03-contrarian">contrarian</label><input class="ctl" type="range" id="in-A03-contrarian" min="0" max="1" step="0.01" value="0.3" data-aid="A03" data-key="contrarian" aria-label="A03 contrarian"><output id="out-A03-contrarian">0.30</output></div><div class="row" id="row-A03-accusation"><label for="in-A03-accusation">accusation</label><input class="ctl" type="range" id="in-A03-accusation" min="0" max="1" step="0.01" value="0.1" data-aid="A03" data-key="accusation" aria-label="A03 accusation"><output id="out-A03-accusation">0.10</output></div><div class="row" id="row-A03-risk"><label for="in-A03-risk">risk</label><input class="ctl" type="range" id="in-A03-risk" min="0" max="1" step="0.01" value="0.2" data-aid="A03" data-key="risk" aria-label="A03 risk"><output id="out-A03-risk">0.20</output></div></div></section>
+<section class="arch" id="card-A04"><header><h3>The Guide</h3><span class="aid">A04</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A04-volubility"><label for="in-A04-volubility">volubility</label><input class="ctl" type="range" id="in-A04-volubility" min="0" max="1" step="0.01" value="0.7" data-aid="A04" data-key="volubility" aria-label="A04 volubility"><output id="out-A04-volubility">0.70</output></div><div class="row" id="row-A04-trust"><label for="in-A04-trust">trust</label><input class="ctl" type="range" id="in-A04-trust" min="0" max="1" step="0.01" value="0.8" data-aid="A04" data-key="trust" aria-label="A04 trust"><output id="out-A04-trust">0.80</output></div><div class="row" id="row-A04-stubborn"><label for="in-A04-stubborn">stubborn</label><input class="ctl" type="range" id="in-A04-stubborn" min="0" max="1" step="0.01" value="0.6" data-aid="A04" data-key="stubborn" aria-label="A04 stubborn"><output id="out-A04-stubborn">0.60</output></div><div class="row" id="row-A04-record"><label for="in-A04-record">record</label><input class="ctl" type="range" id="in-A04-record" min="0" max="1" step="0.01" value="0.4" data-aid="A04" data-key="record" aria-label="A04 record"><output id="out-A04-record">0.40</output></div><div class="row" id="row-A04-object"><label for="in-A04-object">object</label><input class="ctl" type="range" id="in-A04-object" min="0" max="1" step="0.01" value="0.3" data-aid="A04" data-key="object" aria-label="A04 object"><output id="out-A04-object">0.30</output></div><div class="row" id="row-A04-disclosure"><label for="in-A04-disclosure">disclosure</label><input class="ctl" type="range" id="in-A04-disclosure" min="0" max="1" step="0.01" value="0.9" data-aid="A04" data-key="disclosure" aria-label="A04 disclosure"><output id="out-A04-disclosure">0.90</output></div><div class="row" id="row-A04-coalition"><label for="in-A04-coalition">coalition</label><input class="ctl" type="range" id="in-A04-coalition" min="0" max="1" step="0.01" value="1.0" data-aid="A04" data-key="coalition" aria-label="A04 coalition"><output id="out-A04-coalition">1.00</output></div><div class="row" id="row-A04-contrarian"><label for="in-A04-contrarian">contrarian</label><input class="ctl" type="range" id="in-A04-contrarian" min="0" max="1" step="0.01" value="0.1" data-aid="A04" data-key="contrarian" aria-label="A04 contrarian"><output id="out-A04-contrarian">0.10</output></div><div class="row" id="row-A04-accusation"><label for="in-A04-accusation">accusation</label><input class="ctl" type="range" id="in-A04-accusation" min="0" max="1" step="0.01" value="0.3" data-aid="A04" data-key="accusation" aria-label="A04 accusation"><output id="out-A04-accusation">0.30</output></div><div class="row" id="row-A04-risk"><label for="in-A04-risk">risk</label><input class="ctl" type="range" id="in-A04-risk" min="0" max="1" step="0.01" value="0.4" data-aid="A04" data-key="risk" aria-label="A04 risk"><output id="out-A04-risk">0.40</output></div></div></section>
+<section class="arch" id="card-A05"><header><h3>The Cornice</h3><span class="aid">A05</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A05-volubility"><label for="in-A05-volubility">volubility</label><input class="ctl" type="range" id="in-A05-volubility" min="0" max="1" step="0.01" value="0.6" data-aid="A05" data-key="volubility" aria-label="A05 volubility"><output id="out-A05-volubility">0.60</output></div><div class="row" id="row-A05-trust"><label for="in-A05-trust">trust</label><input class="ctl" type="range" id="in-A05-trust" min="0" max="1" step="0.01" value="0.4" data-aid="A05" data-key="trust" aria-label="A05 trust"><output id="out-A05-trust">0.40</output></div><div class="row" id="row-A05-stubborn"><label for="in-A05-stubborn">stubborn</label><input class="ctl" type="range" id="in-A05-stubborn" min="0" max="1" step="0.01" value="0.1" data-aid="A05" data-key="stubborn" aria-label="A05 stubborn"><output id="out-A05-stubborn">0.10</output></div><div class="row" id="row-A05-record"><label for="in-A05-record">record</label><input class="ctl" type="range" id="in-A05-record" min="0" max="1" step="0.01" value="0.1" data-aid="A05" data-key="record" aria-label="A05 record"><output id="out-A05-record">0.10</output></div><div class="row" id="row-A05-object"><label for="in-A05-object">object</label><input class="ctl" type="range" id="in-A05-object" min="0" max="1" step="0.01" value="0.6" data-aid="A05" data-key="object" aria-label="A05 object"><output id="out-A05-object">0.60</output></div><div class="row" id="row-A05-disclosure"><label for="in-A05-disclosure">disclosure</label><input class="ctl" type="range" id="in-A05-disclosure" min="0" max="1" step="0.01" value="0.6" data-aid="A05" data-key="disclosure" aria-label="A05 disclosure"><output id="out-A05-disclosure">0.60</output></div><div class="row" id="row-A05-coalition"><label for="in-A05-coalition">coalition</label><input class="ctl" type="range" id="in-A05-coalition" min="0" max="1" step="0.01" value="0.1" data-aid="A05" data-key="coalition" aria-label="A05 coalition"><output id="out-A05-coalition">0.10</output></div><div class="row" id="row-A05-contrarian"><label for="in-A05-contrarian">contrarian</label><input class="ctl" type="range" id="in-A05-contrarian" min="0" max="1" step="0.01" value="0.7" data-aid="A05" data-key="contrarian" aria-label="A05 contrarian"><output id="out-A05-contrarian">0.70</output></div><div class="row" id="row-A05-accusation"><label for="in-A05-accusation">accusation</label><input class="ctl" type="range" id="in-A05-accusation" min="0" max="1" step="0.01" value="0.5" data-aid="A05" data-key="accusation" aria-label="A05 accusation"><output id="out-A05-accusation">0.50</output></div><div class="row" id="row-A05-risk"><label for="in-A05-risk">risk</label><input class="ctl" type="range" id="in-A05-risk" min="0" max="1" step="0.01" value="0.9" data-aid="A05" data-key="risk" aria-label="A05 risk"><output id="out-A05-risk">0.90</output></div></div></section>
+<section class="arch" id="card-A06"><header><h3>The Surveyor</h3><span class="aid">A06</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A06-volubility"><label for="in-A06-volubility">volubility</label><input class="ctl" type="range" id="in-A06-volubility" min="0" max="1" step="0.01" value="0.6" data-aid="A06" data-key="volubility" aria-label="A06 volubility"><output id="out-A06-volubility">0.60</output></div><div class="row" id="row-A06-trust"><label for="in-A06-trust">trust</label><input class="ctl" type="range" id="in-A06-trust" min="0" max="1" step="0.01" value="0.5" data-aid="A06" data-key="trust" aria-label="A06 trust"><output id="out-A06-trust">0.50</output></div><div class="row" id="row-A06-stubborn"><label for="in-A06-stubborn">stubborn</label><input class="ctl" type="range" id="in-A06-stubborn" min="0" max="1" step="0.01" value="0.7" data-aid="A06" data-key="stubborn" aria-label="A06 stubborn"><output id="out-A06-stubborn">0.70</output></div><div class="row" id="row-A06-record"><label for="in-A06-record">record</label><input class="ctl" type="range" id="in-A06-record" min="0" max="1" step="0.01" value="0.9" data-aid="A06" data-key="record" aria-label="A06 record"><output id="out-A06-record">0.90</output></div><div class="row" id="row-A06-object"><label for="in-A06-object">object</label><input class="ctl" type="range" id="in-A06-object" min="0" max="1" step="0.01" value="1.0" data-aid="A06" data-key="object" aria-label="A06 object"><output id="out-A06-object">1.00</output></div><div class="row" id="row-A06-disclosure"><label for="in-A06-disclosure">disclosure</label><input class="ctl" type="range" id="in-A06-disclosure" min="0" max="1" step="0.01" value="0.2" data-aid="A06" data-key="disclosure" aria-label="A06 disclosure"><output id="out-A06-disclosure">0.20</output></div><div class="row" id="row-A06-coalition"><label for="in-A06-coalition">coalition</label><input class="ctl" type="range" id="in-A06-coalition" min="0" max="1" step="0.01" value="0.2" data-aid="A06" data-key="coalition" aria-label="A06 coalition"><output id="out-A06-coalition">0.20</output></div><div class="row" id="row-A06-contrarian"><label for="in-A06-contrarian">contrarian</label><input class="ctl" type="range" id="in-A06-contrarian" min="0" max="1" step="0.01" value="0.4" data-aid="A06" data-key="contrarian" aria-label="A06 contrarian"><output id="out-A06-contrarian">0.40</output></div><div class="row" id="row-A06-accusation"><label for="in-A06-accusation">accusation</label><input class="ctl" type="range" id="in-A06-accusation" min="0" max="1" step="0.01" value="0.3" data-aid="A06" data-key="accusation" aria-label="A06 accusation"><output id="out-A06-accusation">0.30</output></div><div class="row" id="row-A06-risk"><label for="in-A06-risk">risk</label><input class="ctl" type="range" id="in-A06-risk" min="0" max="1" step="0.01" value="0.5" data-aid="A06" data-key="risk" aria-label="A06 risk"><output id="out-A06-risk">0.50</output></div></div></section>
+<section class="arch" id="card-A07"><header><h3>The Storm-Watcher</h3><span class="aid">A07</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A07-volubility"><label for="in-A07-volubility">volubility</label><input class="ctl" type="range" id="in-A07-volubility" min="0" max="1" step="0.01" value="0.8" data-aid="A07" data-key="volubility" aria-label="A07 volubility"><output id="out-A07-volubility">0.80</output></div><div class="row" id="row-A07-trust"><label for="in-A07-trust">trust</label><input class="ctl" type="range" id="in-A07-trust" min="0" max="1" step="0.01" value="0.1" data-aid="A07" data-key="trust" aria-label="A07 trust"><output id="out-A07-trust">0.10</output></div><div class="row" id="row-A07-stubborn"><label for="in-A07-stubborn">stubborn</label><input class="ctl" type="range" id="in-A07-stubborn" min="0" max="1" step="0.01" value="0.4" data-aid="A07" data-key="stubborn" aria-label="A07 stubborn"><output id="out-A07-stubborn">0.40</output></div><div class="row" id="row-A07-record"><label for="in-A07-record">record</label><input class="ctl" type="range" id="in-A07-record" min="0" max="1" step="0.01" value="0.5" data-aid="A07" data-key="record" aria-label="A07 record"><output id="out-A07-record">0.50</output></div><div class="row" id="row-A07-object"><label for="in-A07-object">object</label><input class="ctl" type="range" id="in-A07-object" min="0" max="1" step="0.01" value="0.5" data-aid="A07" data-key="object" aria-label="A07 object"><output id="out-A07-object">0.50</output></div><div class="row" id="row-A07-disclosure"><label for="in-A07-disclosure">disclosure</label><input class="ctl" type="range" id="in-A07-disclosure" min="0" max="1" step="0.01" value="0.3" data-aid="A07" data-key="disclosure" aria-label="A07 disclosure"><output id="out-A07-disclosure">0.30</output></div><div class="row" id="row-A07-coalition"><label for="in-A07-coalition">coalition</label><input class="ctl" type="range" id="in-A07-coalition" min="0" max="1" step="0.01" value="0.2" data-aid="A07" data-key="coalition" aria-label="A07 coalition"><output id="out-A07-coalition">0.20</output></div><div class="row" id="row-A07-contrarian"><label for="in-A07-contrarian">contrarian</label><input class="ctl" type="range" id="in-A07-contrarian" min="0" max="1" step="0.01" value="0.5" data-aid="A07" data-key="contrarian" aria-label="A07 contrarian"><output id="out-A07-contrarian">0.50</output></div><div class="row" id="row-A07-accusation"><label for="in-A07-accusation">accusation</label><input class="ctl" type="range" id="in-A07-accusation" min="0" max="1" step="0.01" value="0.9" data-aid="A07" data-key="accusation" aria-label="A07 accusation"><output id="out-A07-accusation">0.90</output></div><div class="row" id="row-A07-risk"><label for="in-A07-risk">risk</label><input class="ctl" type="range" id="in-A07-risk" min="0" max="1" step="0.01" value="0.6" data-aid="A07" data-key="risk" aria-label="A07 risk"><output id="out-A07-risk">0.60</output></div></div></section>
+<section class="arch" id="card-A08"><header><h3>The Rope</h3><span class="aid">A08</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A08-volubility"><label for="in-A08-volubility">volubility</label><input class="ctl" type="range" id="in-A08-volubility" min="0" max="1" step="0.01" value="0.5" data-aid="A08" data-key="volubility" aria-label="A08 volubility"><output id="out-A08-volubility">0.50</output></div><div class="row" id="row-A08-trust"><label for="in-A08-trust">trust</label><input class="ctl" type="range" id="in-A08-trust" min="0" max="1" step="0.01" value="0.9" data-aid="A08" data-key="trust" aria-label="A08 trust"><output id="out-A08-trust">0.90</output></div><div class="row" id="row-A08-stubborn"><label for="in-A08-stubborn">stubborn</label><input class="ctl" type="range" id="in-A08-stubborn" min="0" max="1" step="0.01" value="0.9" data-aid="A08" data-key="stubborn" aria-label="A08 stubborn"><output id="out-A08-stubborn">0.90</output></div><div class="row" id="row-A08-record"><label for="in-A08-record">record</label><input class="ctl" type="range" id="in-A08-record" min="0" max="1" step="0.01" value="0.3" data-aid="A08" data-key="record" aria-label="A08 record"><output id="out-A08-record">0.30</output></div><div class="row" id="row-A08-object"><label for="in-A08-object">object</label><input class="ctl" type="range" id="in-A08-object" min="0" max="1" step="0.01" value="0.3" data-aid="A08" data-key="object" aria-label="A08 object"><output id="out-A08-object">0.30</output></div><div class="row" id="row-A08-disclosure"><label for="in-A08-disclosure">disclosure</label><input class="ctl" type="range" id="in-A08-disclosure" min="0" max="1" step="0.01" value="0.8" data-aid="A08" data-key="disclosure" aria-label="A08 disclosure"><output id="out-A08-disclosure">0.80</output></div><div class="row" id="row-A08-coalition"><label for="in-A08-coalition">coalition</label><input class="ctl" type="range" id="in-A08-coalition" min="0" max="1" step="0.01" value="0.8" data-aid="A08" data-key="coalition" aria-label="A08 coalition"><output id="out-A08-coalition">0.80</output></div><div class="row" id="row-A08-contrarian"><label for="in-A08-contrarian">contrarian</label><input class="ctl" type="range" id="in-A08-contrarian" min="0" max="1" step="0.01" value="0.2" data-aid="A08" data-key="contrarian" aria-label="A08 contrarian"><output id="out-A08-contrarian">0.20</output></div><div class="row" id="row-A08-accusation"><label for="in-A08-accusation">accusation</label><input class="ctl" type="range" id="in-A08-accusation" min="0" max="1" step="0.01" value="0.2" data-aid="A08" data-key="accusation" aria-label="A08 accusation"><output id="out-A08-accusation">0.20</output></div><div class="row" id="row-A08-risk"><label for="in-A08-risk">risk</label><input class="ctl" type="range" id="in-A08-risk" min="0" max="1" step="0.01" value="0.3" data-aid="A08" data-key="risk" aria-label="A08 risk"><output id="out-A08-risk">0.30</output></div></div></section>
+<section class="arch" id="card-A09"><header><h3>The Volunteer</h3><span class="aid">A09</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A09-volubility"><label for="in-A09-volubility">volubility</label><input class="ctl" type="range" id="in-A09-volubility" min="0" max="1" step="0.01" value="0.6" data-aid="A09" data-key="volubility" aria-label="A09 volubility"><output id="out-A09-volubility">0.60</output></div><div class="row" id="row-A09-trust"><label for="in-A09-trust">trust</label><input class="ctl" type="range" id="in-A09-trust" min="0" max="1" step="0.01" value="0.7" data-aid="A09" data-key="trust" aria-label="A09 trust"><output id="out-A09-trust">0.70</output></div><div class="row" id="row-A09-stubborn"><label for="in-A09-stubborn">stubborn</label><input class="ctl" type="range" id="in-A09-stubborn" min="0" max="1" step="0.01" value="0.3" data-aid="A09" data-key="stubborn" aria-label="A09 stubborn"><output id="out-A09-stubborn">0.30</output></div><div class="row" id="row-A09-record"><label for="in-A09-record">record</label><input class="ctl" type="range" id="in-A09-record" min="0" max="1" step="0.01" value="0.4" data-aid="A09" data-key="record" aria-label="A09 record"><output id="out-A09-record">0.40</output></div><div class="row" id="row-A09-object"><label for="in-A09-object">object</label><input class="ctl" type="range" id="in-A09-object" min="0" max="1" step="0.01" value="0.4" data-aid="A09" data-key="object" aria-label="A09 object"><output id="out-A09-object">0.40</output></div><div class="row" id="row-A09-disclosure"><label for="in-A09-disclosure">disclosure</label><input class="ctl" type="range" id="in-A09-disclosure" min="0" max="1" step="0.01" value="0.7" data-aid="A09" data-key="disclosure" aria-label="A09 disclosure"><output id="out-A09-disclosure">0.70</output></div><div class="row" id="row-A09-coalition"><label for="in-A09-coalition">coalition</label><input class="ctl" type="range" id="in-A09-coalition" min="0" max="1" step="0.01" value="0.5" data-aid="A09" data-key="coalition" aria-label="A09 coalition"><output id="out-A09-coalition">0.50</output></div><div class="row" id="row-A09-contrarian"><label for="in-A09-contrarian">contrarian</label><input class="ctl" type="range" id="in-A09-contrarian" min="0" max="1" step="0.01" value="0.3" data-aid="A09" data-key="contrarian" aria-label="A09 contrarian"><output id="out-A09-contrarian">0.30</output></div><div class="row" id="row-A09-accusation"><label for="in-A09-accusation">accusation</label><input class="ctl" type="range" id="in-A09-accusation" min="0" max="1" step="0.01" value="0.2" data-aid="A09" data-key="accusation" aria-label="A09 accusation"><output id="out-A09-accusation">0.20</output></div><div class="row" id="row-A09-risk"><label for="in-A09-risk">risk</label><input class="ctl" type="range" id="in-A09-risk" min="0" max="1" step="0.01" value="0.8" data-aid="A09" data-key="risk" aria-label="A09 risk"><output id="out-A09-risk">0.80</output></div></div></section>
+<section class="arch" id="card-A10"><header><h3>The Second</h3><span class="aid">A10</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A10-volubility"><label for="in-A10-volubility">volubility</label><input class="ctl" type="range" id="in-A10-volubility" min="0" max="1" step="0.01" value="0.4" data-aid="A10" data-key="volubility" aria-label="A10 volubility"><output id="out-A10-volubility">0.40</output></div><div class="row" id="row-A10-trust"><label for="in-A10-trust">trust</label><input class="ctl" type="range" id="in-A10-trust" min="0" max="1" step="0.01" value="0.6" data-aid="A10" data-key="trust" aria-label="A10 trust"><output id="out-A10-trust">0.60</output></div><div class="row" id="row-A10-stubborn"><label for="in-A10-stubborn">stubborn</label><input class="ctl" type="range" id="in-A10-stubborn" min="0" max="1" step="0.01" value="0.2" data-aid="A10" data-key="stubborn" aria-label="A10 stubborn"><output id="out-A10-stubborn">0.20</output></div><div class="row" id="row-A10-record"><label for="in-A10-record">record</label><input class="ctl" type="range" id="in-A10-record" min="0" max="1" step="0.01" value="0.6" data-aid="A10" data-key="record" aria-label="A10 record"><output id="out-A10-record">0.60</output></div><div class="row" id="row-A10-object"><label for="in-A10-object">object</label><input class="ctl" type="range" id="in-A10-object" min="0" max="1" step="0.01" value="0.2" data-aid="A10" data-key="object" aria-label="A10 object"><output id="out-A10-object">0.20</output></div><div class="row" id="row-A10-disclosure"><label for="in-A10-disclosure">disclosure</label><input class="ctl" type="range" id="in-A10-disclosure" min="0" max="1" step="0.01" value="0.5" data-aid="A10" data-key="disclosure" aria-label="A10 disclosure"><output id="out-A10-disclosure">0.50</output></div><div class="row" id="row-A10-coalition"><label for="in-A10-coalition">coalition</label><input class="ctl" type="range" id="in-A10-coalition" min="0" max="1" step="0.01" value="0.9" data-aid="A10" data-key="coalition" aria-label="A10 coalition"><output id="out-A10-coalition">0.90</output></div><div class="row" id="row-A10-contrarian"><label for="in-A10-contrarian">contrarian</label><input class="ctl" type="range" id="in-A10-contrarian" min="0" max="1" step="0.01" value="0.0" data-aid="A10" data-key="contrarian" aria-label="A10 contrarian"><output id="out-A10-contrarian">0.00</output></div><div class="row" id="row-A10-accusation"><label for="in-A10-accusation">accusation</label><input class="ctl" type="range" id="in-A10-accusation" min="0" max="1" step="0.01" value="0.2" data-aid="A10" data-key="accusation" aria-label="A10 accusation"><output id="out-A10-accusation">0.20</output></div><div class="row" id="row-A10-risk"><label for="in-A10-risk">risk</label><input class="ctl" type="range" id="in-A10-risk" min="0" max="1" step="0.01" value="0.3" data-aid="A10" data-key="risk" aria-label="A10 risk"><output id="out-A10-risk">0.30</output></div></div></section>
+<section class="arch" id="card-A11"><header><h3>The Counterweight</h3><span class="aid">A11</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A11-volubility"><label for="in-A11-volubility">volubility</label><input class="ctl" type="range" id="in-A11-volubility" min="0" max="1" step="0.01" value="0.7" data-aid="A11" data-key="volubility" aria-label="A11 volubility"><output id="out-A11-volubility">0.70</output></div><div class="row" id="row-A11-trust"><label for="in-A11-trust">trust</label><input class="ctl" type="range" id="in-A11-trust" min="0" max="1" step="0.01" value="0.4" data-aid="A11" data-key="trust" aria-label="A11 trust"><output id="out-A11-trust">0.40</output></div><div class="row" id="row-A11-stubborn"><label for="in-A11-stubborn">stubborn</label><input class="ctl" type="range" id="in-A11-stubborn" min="0" max="1" step="0.01" value="0.7" data-aid="A11" data-key="stubborn" aria-label="A11 stubborn"><output id="out-A11-stubborn">0.70</output></div><div class="row" id="row-A11-record"><label for="in-A11-record">record</label><input class="ctl" type="range" id="in-A11-record" min="0" max="1" step="0.01" value="0.7" data-aid="A11" data-key="record" aria-label="A11 record"><output id="out-A11-record">0.70</output></div><div class="row" id="row-A11-object"><label for="in-A11-object">object</label><input class="ctl" type="range" id="in-A11-object" min="0" max="1" step="0.01" value="0.4" data-aid="A11" data-key="object" aria-label="A11 object"><output id="out-A11-object">0.40</output></div><div class="row" id="row-A11-disclosure"><label for="in-A11-disclosure">disclosure</label><input class="ctl" type="range" id="in-A11-disclosure" min="0" max="1" step="0.01" value="0.3" data-aid="A11" data-key="disclosure" aria-label="A11 disclosure"><output id="out-A11-disclosure">0.30</output></div><div class="row" id="row-A11-coalition"><label for="in-A11-coalition">coalition</label><input class="ctl" type="range" id="in-A11-coalition" min="0" max="1" step="0.01" value="0.1" data-aid="A11" data-key="coalition" aria-label="A11 coalition"><output id="out-A11-coalition">0.10</output></div><div class="row" id="row-A11-contrarian"><label for="in-A11-contrarian">contrarian</label><input class="ctl" type="range" id="in-A11-contrarian" min="0" max="1" step="0.01" value="1.0" data-aid="A11" data-key="contrarian" aria-label="A11 contrarian"><output id="out-A11-contrarian">1.00</output></div><div class="row" id="row-A11-accusation"><label for="in-A11-accusation">accusation</label><input class="ctl" type="range" id="in-A11-accusation" min="0" max="1" step="0.01" value="0.6" data-aid="A11" data-key="accusation" aria-label="A11 accusation"><output id="out-A11-accusation">0.60</output></div><div class="row" id="row-A11-risk"><label for="in-A11-risk">risk</label><input class="ctl" type="range" id="in-A11-risk" min="0" max="1" step="0.01" value="0.6" data-aid="A11" data-key="risk" aria-label="A11 risk"><output id="out-A11-risk">0.60</output></div></div></section>
+<section class="arch" id="card-A12"><header><h3>The Warden</h3><span class="aid">A12</span><span class="changed-count"></span></header><div class="grid"><div class="row" id="row-A12-volubility"><label for="in-A12-volubility">volubility</label><input class="ctl" type="range" id="in-A12-volubility" min="0" max="1" step="0.01" value="0.6" data-aid="A12" data-key="volubility" aria-label="A12 volubility"><output id="out-A12-volubility">0.60</output></div><div class="row" id="row-A12-trust"><label for="in-A12-trust">trust</label><input class="ctl" type="range" id="in-A12-trust" min="0" max="1" step="0.01" value="0.7" data-aid="A12" data-key="trust" aria-label="A12 trust"><output id="out-A12-trust">0.70</output></div><div class="row" id="row-A12-stubborn"><label for="in-A12-stubborn">stubborn</label><input class="ctl" type="range" id="in-A12-stubborn" min="0" max="1" step="0.01" value="0.4" data-aid="A12" data-key="stubborn" aria-label="A12 stubborn"><output id="out-A12-stubborn">0.40</output></div><div class="row" id="row-A12-record"><label for="in-A12-record">record</label><input class="ctl" type="range" id="in-A12-record" min="0" max="1" step="0.01" value="0.2" data-aid="A12" data-key="record" aria-label="A12 record"><output id="out-A12-record">0.20</output></div><div class="row" id="row-A12-object"><label for="in-A12-object">object</label><input class="ctl" type="range" id="in-A12-object" min="0" max="1" step="0.01" value="0.7" data-aid="A12" data-key="object" aria-label="A12 object"><output id="out-A12-object">0.70</output></div><div class="row" id="row-A12-disclosure"><label for="in-A12-disclosure">disclosure</label><input class="ctl" type="range" id="in-A12-disclosure" min="0" max="1" step="0.01" value="0.6" data-aid="A12" data-key="disclosure" aria-label="A12 disclosure"><output id="out-A12-disclosure">0.60</output></div><div class="row" id="row-A12-coalition"><label for="in-A12-coalition">coalition</label><input class="ctl" type="range" id="in-A12-coalition" min="0" max="1" step="0.01" value="0.4" data-aid="A12" data-key="coalition" aria-label="A12 coalition"><output id="out-A12-coalition">0.40</output></div><div class="row" id="row-A12-contrarian"><label for="in-A12-contrarian">contrarian</label><input class="ctl" type="range" id="in-A12-contrarian" min="0" max="1" step="0.01" value="0.6" data-aid="A12" data-key="contrarian" aria-label="A12 contrarian"><output id="out-A12-contrarian">0.60</output></div><div class="row" id="row-A12-accusation"><label for="in-A12-accusation">accusation</label><input class="ctl" type="range" id="in-A12-accusation" min="0" max="1" step="0.01" value="0.3" data-aid="A12" data-key="accusation" aria-label="A12 accusation"><output id="out-A12-accusation">0.30</output></div><div class="row" id="row-A12-risk"><label for="in-A12-risk">risk</label><input class="ctl" type="range" id="in-A12-risk" min="0" max="1" step="0.01" value="0.4" data-aid="A12" data-key="risk" aria-label="A12 risk"><output id="out-A12-risk">0.40</output></div></div></section>
+<div class="sticky-actions"><button class="btn primary" id="copy-overrides">Copy config JSON</button><button class="btn" id="copy-full">Copy full file</button><button class="btn" id="reset">Reset to defaults</button><span class="status" id="status"></span></div><details class="preview"><summary>Preview what gets copied</summary><pre class="code" id="preview">{}</pre></details>
+<footer class="page">Defaults inlined from archetypes.json when this page was generated. Nothing here writes to the repository.</footer>
+</div>
+<script>
+
+const DEFAULTS = {"A01": {"volubility": 0.5, "trust": 0.5, "stubborn": 0.8, "record": 1.0, "object": 0.4, "disclosure": 0.3, "coalition": 0.3, "contrarian": 0.2, "accusation": 0.4, "risk": 0.3}, "A02": {"volubility": 1.0, "trust": 0.3, "stubborn": 0.9, "record": 0.3, "object": 0.2, "disclosure": 0.5, "coalition": 0.4, "contrarian": 0.1, "accusation": 1.0, "risk": 0.7}, "A03": {"volubility": 0.15, "trust": 0.5, "stubborn": 0.6, "record": 0.8, "object": 0.5, "disclosure": 0.1, "coalition": 0.2, "contrarian": 0.3, "accusation": 0.1, "risk": 0.2}, "A04": {"volubility": 0.7, "trust": 0.8, "stubborn": 0.6, "record": 0.4, "object": 0.3, "disclosure": 0.9, "coalition": 1.0, "contrarian": 0.1, "accusation": 0.3, "risk": 0.4}, "A05": {"volubility": 0.6, "trust": 0.4, "stubborn": 0.1, "record": 0.1, "object": 0.6, "disclosure": 0.6, "coalition": 0.1, "contrarian": 0.7, "accusation": 0.5, "risk": 0.9}, "A06": {"volubility": 0.6, "trust": 0.5, "stubborn": 0.7, "record": 0.9, "object": 1.0, "disclosure": 0.2, "coalition": 0.2, "contrarian": 0.4, "accusation": 0.3, "risk": 0.5}, "A07": {"volubility": 0.8, "trust": 0.1, "stubborn": 0.4, "record": 0.5, "object": 0.5, "disclosure": 0.3, "coalition": 0.2, "contrarian": 0.5, "accusation": 0.9, "risk": 0.6}, "A08": {"volubility": 0.5, "trust": 0.9, "stubborn": 0.9, "record": 0.3, "object": 0.3, "disclosure": 0.8, "coalition": 0.8, "contrarian": 0.2, "accusation": 0.2, "risk": 0.3}, "A09": {"volubility": 0.6, "trust": 0.7, "stubborn": 0.3, "record": 0.4, "object": 0.4, "disclosure": 0.7, "coalition": 0.5, "contrarian": 0.3, "accusation": 0.2, "risk": 0.8}, "A10": {"volubility": 0.4, "trust": 0.6, "stubborn": 0.2, "record": 0.6, "object": 0.2, "disclosure": 0.5, "coalition": 0.9, "contrarian": 0.0, "accusation": 0.2, "risk": 0.3}, "A11": {"volubility": 0.7, "trust": 0.4, "stubborn": 0.7, "record": 0.7, "object": 0.4, "disclosure": 0.3, "coalition": 0.1, "contrarian": 1.0, "accusation": 0.6, "risk": 0.6}, "A12": {"volubility": 0.6, "trust": 0.7, "stubborn": 0.4, "record": 0.2, "object": 0.7, "disclosure": 0.6, "coalition": 0.4, "contrarian": 0.6, "accusation": 0.3, "risk": 0.4}};
+const KEYS = ["volubility", "trust", "stubborn", "record", "object", "disclosure", "coalition", "contrarian", "accusation", "risk"];
+const IDS = ["A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09", "A10", "A11", "A12"];
+
+const state = JSON.parse(JSON.stringify(DEFAULTS));
+
+function round2(v) { return Math.round(v * 100) / 100; }
+
+function changedSubset() {
+  const out = {};
+  for (const aid of IDS) {
+    for (const k of KEYS) {
+      if (round2(state[aid][k]) !== round2(DEFAULTS[aid][k])) {
+        (out[aid] = out[aid] || {})[k] = round2(state[aid][k]);
+      }
+    }
+  }
+  return out;
+}
+
+function countChanged() {
+  let n = 0;
+  for (const aid of IDS) for (const k of KEYS) {
+    if (round2(state[aid][k]) !== round2(DEFAULTS[aid][k])) n++;
+  }
+  return n;
+}
+
+function refresh() {
+  for (const aid of IDS) {
+    let dirty = 0;
+    for (const k of KEYS) {
+      const row = document.getElementById('row-' + aid + '-' + k);
+      const changed = round2(state[aid][k]) !== round2(DEFAULTS[aid][k]);
+      row.classList.toggle('dirty', changed);
+      if (changed) dirty++;
+    }
+    const card = document.getElementById('card-' + aid);
+    card.classList.toggle('dirty', dirty > 0);
+    card.querySelector('.changed-count').textContent =
+      dirty ? dirty + ' changed' : '';
+  }
+  const n = countChanged();
+  document.getElementById('status').textContent = n === 0
+    ? 'No changes — this is the committed archetypes.json.'
+    : n + ' parameter' + (n === 1 ? '' : 's') + ' changed across '
+      + Object.keys(changedSubset()).length + ' archetype(s).';
+  document.getElementById('preview').textContent =
+    n === 0 ? '{}' : JSON.stringify(changedSubset(), null, 2);
+}
+
+function setValue(aid, key, value) {
+  state[aid][key] = value;
+  document.getElementById('out-' + aid + '-' + key).textContent = value.toFixed(2);
+  refresh();
+}
+
+async function copyText(text, btn) {
+  const label = btn.textContent;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      // http:// and file:// have no clipboard API; the textarea trick still works.
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+  } catch (e) {
+    btn.textContent = 'Copy failed — select the preview below';
+  }
+  setTimeout(function () { btn.textContent = label; btn.classList.remove('copied'); }, 1800);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('input[type=range]').forEach(function (el) {
+    el.addEventListener('input', function () {
+      setValue(el.dataset.aid, el.dataset.key, parseFloat(el.value));
+    });
+  });
+
+  document.getElementById('copy-overrides').addEventListener('click', function () {
+    const n = countChanged();
+    if (n === 0) {
+      this.textContent = 'Nothing changed yet';
+      const self = this;
+      setTimeout(function () { self.textContent = 'Copy config JSON'; }, 1600);
+      return;
+    }
+    copyText(JSON.stringify(changedSubset()), this);
+  });
+
+  document.getElementById('copy-full').addEventListener('click', function () {
+    const full = { schema: 1, param_keys: KEYS, params: {} };
+    for (const aid of IDS) {
+      full.params[aid] = {};
+      for (const k of KEYS) full.params[aid][k] = round2(state[aid][k]);
+    }
+    copyText(JSON.stringify(full, null, 2) + '\n', this);
+  });
+
+  document.getElementById('reset').addEventListener('click', function () {
+    for (const aid of IDS) for (const k of KEYS) {
+      state[aid][k] = DEFAULTS[aid][k];
+      const el = document.getElementById('in-' + aid + '-' + k);
+      el.value = DEFAULTS[aid][k];
+      document.getElementById('out-' + aid + '-' + k).textContent =
+        DEFAULTS[aid][k].toFixed(2);
+    }
+    refresh();
+  });
+
+  refresh();
+});
+
+</script>
+</body>
+</html>

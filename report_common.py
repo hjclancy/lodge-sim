@@ -8,6 +8,7 @@ generators don't duplicate styling; it has no opinion about report content.
 """
 
 import html
+from urllib.parse import quote
 
 CSS = """
 :root {
@@ -150,6 +151,15 @@ footer.page {
 """
 
 
+def favicon_link(emoji):
+    """An emoji as the tab icon, inline — the reports have no asset directory
+    to put a .ico in, and a browser asking for /favicon.ico on a static host
+    is a 404 in every reader's console."""
+    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
+           f'<text y=".9em" font-size="90">{html.escape(emoji)}</text></svg>')
+    return f'<link rel="icon" href="data:image/svg+xml,{quote(svg)}">'
+
+
 def html_shell(title, favicon_emoji, header_title, header_meta, body_html):
     """title: <title> text. header_title/header_meta: the on-page banner.
     body_html: everything below the banner, already-escaped where needed."""
@@ -159,6 +169,7 @@ def html_shell(title, favicon_emoji, header_title, header_meta, body_html):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
+{favicon_link(favicon_emoji)}
 <style>{CSS}</style>
 </head>
 <body>

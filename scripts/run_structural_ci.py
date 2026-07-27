@@ -23,8 +23,10 @@ for _p in (_REPO, _HERE):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from run_structural import run, render_report
-from report_history import append_row, new_row, unique_report_path, REPO_ROOT
+from run_structural import run, render_report, report_data
+from archetypes import PARAM_OVERRIDES, params_summary
+from report_history import (append_row, new_row, unique_report_path, write_report_data,
+                            REPO_ROOT)
 
 # 5,000 games is ~8s; 200,000 is a few minutes. Past that a workflow_dispatch
 # typo is just burning runner time — the report doesn't get more informative.
@@ -70,9 +72,13 @@ def main():
     out_path = args.out or unique_report_path("structural")
 
     print(f"structural batch: {games:,} games -> {os.path.relpath(out_path, REPO_ROOT)}")
+    print(f"parameters: {params_summary()}")
+    for change in PARAM_OVERRIDES:
+        print(f"  override {change}")
     t0 = time.time()
     r = run(games)
     render_report(r, out_path)
+    data_path = write_report_data(os.path.basename(out_path), report_data(r))
     elapsed = time.time() - t0
 
     m = metrics_from(r)
@@ -85,6 +91,7 @@ def main():
         cost_usd=0.0,
         elapsed_s=r["elapsed"],
         notes="",
+        params=r["params"],
     )
     append_row(row)
 
@@ -97,7 +104,9 @@ def main():
     print(f"  bloc non-unanimous {m['bloc_non_unanimous_per_game']:.2f}/game")
     print(f"  plate detections   {m['plate_detections']:,}")
     print(f"  invariants         {m['invariant_violations']} violation(s)")
+    print(f"  parameters         {params_summary()}")
     print(f"\nreport   {os.path.relpath(out_path, REPO_ROOT)}")
+    print(f"data     {os.path.relpath(data_path, REPO_ROOT)}")
     print(f"history  reports/history.json (+1 row, total {elapsed:.1f}s)")
 
     # Non-zero exit on an invariant violation: the report still gets written and
