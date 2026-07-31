@@ -62,25 +62,32 @@ DEFAULT_LINE_METRICS = ["traitor_win_pct", "nomination_accuracy_pct",
                         "nomination_conversion_pct"]
 
 EXTRA_CSS = """
-ul.reports { list-style: none; padding: 0; margin: 0.4rem 0 1.8rem 0; }
+ul.reports { list-style: none; padding: 0; margin: var(--s8) 0 var(--s32) 0; }
 ul.reports li {
-  border: 1px solid var(--line); background: var(--panel); border-radius: 6px;
-  padding: 0.7rem 0.95rem; margin-bottom: 0.5rem;
-  display: flex; gap: 0.7rem; align-items: baseline; flex-wrap: wrap;
+  border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius);
+  padding: var(--s12) var(--s16); margin-bottom: var(--s8);
+  display: flex; gap: var(--s12); align-items: baseline; flex-wrap: wrap;
 }
-ul.reports a { color: var(--accent); font-weight: 600; text-decoration: none; }
+ul.reports a { color: var(--accent); font-weight: 500; text-decoration: none; }
 ul.reports a:hover { text-decoration: underline; }
-ul.reports .sub { color: var(--ink-soft); font-size: 0.86rem; }
-ul.reports .links { margin-left: auto; display: flex; gap: 0.6rem; font-size: 0.84rem; }
-h3.datehead { color: var(--ink-soft); font-size: 0.92rem; margin: 1.4rem 0 0.3rem 0; }
+ul.reports .sub { color: var(--text-muted); font-size: var(--t-caption); }
+ul.reports .links { margin-left: auto; display: flex; gap: var(--s12);
+                    font-size: var(--t-caption); }
+h3.datehead {
+  color: var(--text-muted); font-family: var(--mono); font-size: var(--t-micro);
+  font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  margin: var(--s24) 0 var(--s4) 0;
+}
 th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
-th.sortable::after { content: " \\2195"; opacity: 0.35; font-size: 0.8em; }
-th.sortable[data-dir="asc"]::after { content: " \\2191"; opacity: 1; }
-th.sortable[data-dir="desc"]::after { content: " \\2193"; opacity: 1; }
+th.sortable::after { content: " \\2195"; opacity: 0.48; font-size: 0.8em; }
+th.sortable[data-dir="asc"]::after { content: " \\2191"; opacity: 1; color: var(--accent); }
+th.sortable[data-dir="desc"]::after { content: " \\2193"; opacity: 1; color: var(--accent); }
 td.nowrap { white-space: nowrap; }
-.metricpick { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin: 0.3rem 0 0.9rem 0; }
-.metricpick label { font-size: 0.85rem; color: var(--ink-soft); display: flex;
-                    gap: 0.3rem; align-items: center; cursor: pointer; }
+.metricpick { display: flex; flex-wrap: wrap; gap: var(--s4) var(--s16);
+              margin: var(--s4) 0 var(--s12) 0; }
+.metricpick label { font-size: var(--t-small); color: var(--text-muted); display: flex;
+                    gap: var(--s4); align-items: center; cursor: pointer; }
+.metricpick input { accent-color: var(--cobalt); }
 """
 
 SCRIPT = r"""
@@ -132,19 +139,33 @@ var RUNS = __RUNS__;
 var METRICS = __METRICS__;
 var trend = null;
 
+// The metrics are nominal — there is no ordering between "traitor win %" and
+// "cost" — and a reader can select all twelve at once, more than the Cobalt
+// ramp can legibly carry. So the tint step is paired with a dash pattern and a
+// point shape (§7.9 — never colour alone). Only the four strongest steps of
+// the ramp are used: its weak end is fine as a bar fill, but a 2px stroke in it
+// falls under the 3:1 floor against the page. Four tints times three dashes is
+// twelve combinations — exactly the metric count.
+var LINE_TINTS = PALETTE.slice(0, 4);
+
 function seriesFor(keys) {
   return keys.map(function (key, i) {
     var m = METRICS.find(function (x) { return x.key === key; });
+    var tint = LINE_TINTS[i % LINE_TINTS.length];
+    var cycle = Math.floor(i / LINE_TINTS.length);
     return {
       label: m.label,
       data: RUNS.map(function (r) {
         var v = r[key];
         return (v === null || v === undefined) ? null : v;
       }),
-      borderColor: PALETTE[i % PALETTE.length],
-      backgroundColor: PALETTE[i % PALETTE.length],
+      borderColor: tint,
+      backgroundColor: tint,
+      borderDash: DASHES[cycle % DASHES.length],
+      pointStyle: POINTS[cycle % POINTS.length],
       yAxisID: m.axis === 'pct' ? 'y' : 'y1',
       spanGaps: true,
+      borderWidth: 2,
       tension: 0.25,
       pointRadius: 4,
       pointHoverRadius: 6
@@ -184,14 +205,14 @@ function drawTrend() {
         }
       },
       scales: {
-        x: { ticks: { color: themeInk(), maxRotation: 45, minRotation: 0 },
+        x: { ticks: { color: themeMuted(), maxRotation: 45, minRotation: 0 },
              grid: { display: false } },
         y: { display: usesPct, position: 'left', beginAtZero: true, max: 100,
-             ticks: { color: themeInk() }, grid: { color: gridColor() },
-             title: { display: true, text: 'percent', color: themeInk() } },
+             ticks: { color: themeMuted() }, grid: { color: gridColor() },
+             title: { display: true, text: 'percent', color: themeMuted() } },
         y1: { display: usesCount, position: 'right', beginAtZero: true,
-              ticks: { color: themeInk() }, grid: { drawOnChartArea: false },
-              title: { display: true, text: 'count', color: themeInk() } }
+              ticks: { color: themeMuted() }, grid: { drawOnChartArea: false },
+              title: { display: true, text: 'count', color: themeMuted() } }
       }
     })
   });
@@ -372,7 +393,7 @@ def render_trend(runs):
         '<div class="banner hidden" id="trend-err"></div>',
         f'<div class="metricpick">{picks}</div>',
         '<div class="chartbox"><div class="chartwrap"><canvas id="c-trend"></canvas></div>'
-        '<p class="cap" style="margin:0.7rem 0 0 0">Every batch in '
+        '<p class="cap" style="margin:var(--s12) 0 0 0">Every batch in '
         '<a href="history.json">history.json</a>, oldest to newest. Batches are evenly '
         'spaced by run order, not by date or by sample size &mdash; a 2-game Sonnet batch '
         'sits the same distance from its neighbours as a 200,000-game heuristic one, and '

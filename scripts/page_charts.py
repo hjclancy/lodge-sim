@@ -25,10 +25,10 @@ for _p in (_REPO, _HERE):
 import dashboard as dash
 
 EXTRA_CSS = """
-.paramtable { font-size: 0.82rem; }
-.paramtable td, .paramtable th { padding: 0.3rem 0.5rem; }
-.meta-line { color: var(--ink-soft); font-size: 0.9rem; margin: 0.2rem 0 1rem 0; }
-.meta-line strong { color: var(--ink); }
+.paramtable { font-size: var(--t-caption); }
+.paramtable td, .paramtable th { padding: var(--s4) var(--s8); }
+.meta-line { color: var(--text-muted); font-size: var(--t-small); margin: var(--s4) 0 var(--s16) 0; }
+.meta-line strong { color: var(--text); font-family: var(--mono); font-weight: 500; }
 """
 
 CHARTS = [
@@ -45,12 +45,14 @@ CHARTS = [
      "25–33%: three Traitors among the rest of the table. An archetype below the base "
      "rate is evidence of a defective parameter mapping in heuristic_bots.py, not of a "
      "game property — canon §17 requires this to come back clean before the win split is "
-     "treated as a balance problem."),
+     "treated as a balance problem. Archetypes under the base rate are marked ▼ on the "
+     "axis as well as drawn in the strongest tint."),
     ("ladder", "Tie ladder step distribution (§5.4)",
      "Which step of the deterministic ladder resolved each tied ballot. RPS is gone; step "
      "3 always resolves because nomination order is a strict total ordering. "
-     "SMALL_COUNT_TIE_FORCED is the only random elimination left and is reachable only "
-     "below 5 alive, where there is no nomination record to read."),
+     "SMALL_COUNT_TIE_FORCED — marked ▼ and drawn in the strongest tint — is the only "
+     "random elimination left, and is reachable only below 5 alive, where there is no "
+     "nomination record to read."),
     ("plate", "Plate detection by archetype (§8.3)",
      "Detections per game. At this tier detection is a gated roll on the archetype's "
      "`object` parameter, not a reasoning trace — a deliberately different mechanism "
@@ -66,6 +68,19 @@ __FETCH__
 const BATCHES = __BATCHES__;
 const charts = {};
 
+// HOUSE STYLE §3: every chart on this page is Mode A — one family, Cobalt
+// tints. Two-category charts take well-separated steps of the ramp rather
+// than two hues, and each keeps its legend so the split is never read from
+// tint alone. Reference lines are neutral, because an annotation is not data.
+// PALETTE is ordered by emphasis for the active scheme, so these names hold in
+// both: C_STRONG is whichever end carries hardest against the page. Pairs take
+// steps 0 and 2 rather than adjacent ones — that keeps both series clear of the
+// 3:1 mark floor against the page in either scheme, and 3:1 from each other.
+const C_STRONG = PALETTE[0];   // exceptions, and the first series of a pair
+const C_MAIN   = PALETTE[1];   // the only series, where a chart has one
+const C_MID    = PALETTE[2];   // ordinary bars, and the second series of a pair
+const MARK = '▼ ';        // prefixes an exception's axis label
+
 function destroyAll() {
   Object.keys(charts).forEach(function (k) { charts[k].destroy(); delete charts[k]; });
 }
@@ -80,9 +95,9 @@ function drawSurvival(d) {
       labels: labels,
       datasets: [
         { label: 'Faithful survival %', data: d.survival.map(function (s) { return pct(s.faithful_pct); }),
-          backgroundColor: PALETTE[1] },
+          backgroundColor: C_STRONG },
         { label: 'Traitor survival %', data: d.survival.map(function (s) { return pct(s.traitor_pct); }),
-          backgroundColor: PALETTE[3] }
+          backgroundColor: C_MID }
       ]
     },
     options: baseOptions({
@@ -94,10 +109,10 @@ function drawSurvival(d) {
         } } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true, max: 100, title: { display: true, text: '% surviving',
-             color: themeInk() } }
+             color: themeMuted() } }
       }
     })
   });
@@ -111,18 +126,18 @@ function drawElimination(d) {
       labels: rows.map(function (r) { return r.phase; }),
       datasets: [
         { label: 'Murdered', data: rows.map(function (r) { return r.murdered / d.games; }),
-          backgroundColor: PALETTE[3] },
+          backgroundColor: C_STRONG },
         { label: 'Banished', data: rows.map(function (r) { return r.banished / d.games; }),
-          backgroundColor: PALETTE[2] }
+          backgroundColor: C_MID }
       ]
     },
     options: baseOptions({
       scales: {
-        x: { stacked: true, ticks: { color: themeInk(), maxRotation: 60, minRotation: 45 },
+        x: { stacked: true, ticks: { color: themeMuted(), maxRotation: 60, minRotation: 45 },
              grid: { display: false } },
-        y: { stacked: true, ticks: { color: themeInk() }, grid: { color: gridColor() },
+        y: { stacked: true, ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true,
-             title: { display: true, text: 'eliminations per game', color: themeInk() } }
+             title: { display: true, text: 'eliminations per game', color: themeMuted() } }
       }
     })
   });
@@ -131,24 +146,27 @@ function drawElimination(d) {
 function drawNomination(d) {
   const rows = d.nomination_accuracy || [];
   // The 25–33% base-rate band is what makes this chart readable: a bar below
-  // it is a defective parameter mapping, not a finding about the game.
+  // it is a defective parameter mapping, not a finding about the game. That
+  // exception is marked on the axis label as well as by tint, so it survives
+  // grayscale (§7.9).
+  const under = function (r) { return r.pct !== null && r.pct < 25; };
   charts.nomination = new Chart(document.getElementById('c-nomination'), {
     type: 'bar',
     data: {
-      labels: rows.map(function (r) { return r.id; }),
+      labels: rows.map(function (r) { return (under(r) ? MARK : '') + r.id; }),
       datasets: [
         { label: 'Nomination accuracy %',
           data: rows.map(function (r) { return pct(r.pct); }),
           backgroundColor: rows.map(function (r) {
-            return (r.pct !== null && r.pct < 25) ? PALETTE[3] : PALETTE[2];
+            return under(r) ? C_STRONG : C_MID;
           }), order: 2 },
         { label: 'Base rate (25%)', type: 'line',
           data: rows.map(function () { return 25; }),
-          borderColor: PALETTE[4], borderDash: [5, 4], borderWidth: 2,
+          borderColor: themeMuted(), borderDash: [5, 4], borderWidth: 1,
           pointRadius: 0, fill: false, order: 1 },
         { label: 'Base rate (33%)', type: 'line',
           data: rows.map(function () { return 33; }),
-          borderColor: PALETTE[4], borderDash: [2, 3], borderWidth: 2,
+          borderColor: themeMuted(), borderDash: [2, 3], borderWidth: 1,
           pointRadius: 0, fill: false, order: 1 }
       ]
     },
@@ -167,10 +185,10 @@ function drawNomination(d) {
         } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true, suggestedMax: 60,
-             title: { display: true, text: '% naming a Traitor', color: themeInk() } }
+             title: { display: true, text: '% naming a Traitor', color: themeMuted() } }
       }
     })
   });
@@ -181,12 +199,16 @@ function drawLadder(d) {
   charts.ladder = new Chart(document.getElementById('c-ladder'), {
     type: 'bar',
     data: {
-      labels: rows.map(function (r) { return r.tag.replace('TIE_LADDER_', ''); }),
+      // The forced-random step is the one worth spotting, so it is marked on
+      // the axis as well as drawn at the dark end of the ramp.
+      labels: rows.map(function (r) {
+        const name = r.tag.replace('TIE_LADDER_', '');
+        return (r.tag === 'SMALL_COUNT_TIE_FORCED' ? MARK : '') + name;
+      }),
       datasets: [{ label: 'Ties resolved',
                    data: rows.map(function (r) { return r.count; }),
                    backgroundColor: rows.map(function (r) {
-                     // The forced-random step is the one worth spotting.
-                     return r.tag === 'SMALL_COUNT_TIE_FORCED' ? PALETTE[3] : PALETTE[0];
+                     return r.tag === 'SMALL_COUNT_TIE_FORCED' ? C_STRONG : C_MID;
                    }) }]
     },
     options: baseOptions({
@@ -198,8 +220,8 @@ function drawLadder(d) {
         } } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true }
       }
     })
@@ -214,7 +236,7 @@ function drawPlate(d) {
       labels: rows.map(function (r) { return r.id; }),
       datasets: [{ label: 'Detections per game',
                    data: rows.map(function (r) { return Math.round(r.per_game * 1000) / 1000; }),
-                   backgroundColor: PALETTE[5] }]
+                   backgroundColor: C_MAIN }]
     },
     options: baseOptions({
       plugins: {
@@ -225,8 +247,8 @@ function drawPlate(d) {
         } } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() }, beginAtZero: true }
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() }, beginAtZero: true }
       }
     })
   });
@@ -234,21 +256,24 @@ function drawPlate(d) {
 
 function drawFloats(d) {
   const rows = d.float_events || [];
+  // Nominal categories, so they are separated by position and direct labels
+  // rather than by tint steps — a mono ramp here would imply a ranking the
+  // data does not have (§3 caveat).
   charts.floats = new Chart(document.getElementById('c-floats'), {
     type: 'bar',
     data: {
       labels: rows.map(function (r) { return r.tag; }),
       datasets: [{ label: '% of games',
                    data: rows.map(function (r) { return pct(r.pct); }),
-                   backgroundColor: PALETTE.slice(0, rows.length) }]
+                   backgroundColor: C_MAIN }]
     },
     options: baseOptions({
       indexAxis: 'y',
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true, max: 100 },
-        y: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { display: false } }
+        y: { ticks: { color: themeMuted(), font: { size: 11 } }, grid: { display: false } }
       }
     })
   });

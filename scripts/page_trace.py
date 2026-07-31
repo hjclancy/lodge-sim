@@ -30,39 +30,55 @@ import dashboard as dash
 EXTRA_CSS = """
 /* Reasoning is prose. Cap the column at a readable measure rather than
    letting entries run the full width of a 1180px page. */
-.timeline { margin-top: 0.6rem; max-width: 940px; }
+.timeline { margin-top: var(--s8); max-width: 940px; }
 .phase-head {
-  position: sticky; top: 3rem; background: var(--paper); z-index: 3;
-  border-bottom: 1px solid var(--line); padding: 0.45rem 0 0.3rem 0;
-  margin: 1.2rem 0 0.4rem 0; font-size: 0.85rem; font-weight: 700;
-  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+  position: sticky; top: 3rem; background: var(--bg); z-index: 3;
+  border-bottom: 1px solid var(--rule); padding: var(--s8) 0 var(--s4) 0;
+  margin: var(--s24) 0 var(--s8) 0;
+  font-family: var(--mono); font-size: var(--t-micro); font-weight: 500;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted);
 }
 .entry {
-  border: 1px solid var(--line); border-left: 4px solid var(--line);
-  background: var(--panel); border-radius: 6px;
-  padding: 0.6rem 0.85rem; margin-bottom: 0.45rem;
+  border: 1px solid var(--rule); border-left: 4px solid var(--rule-strong);
+  background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+  padding: var(--s12) var(--s16); margin-bottom: var(--s8);
 }
-.entry.traitor { border-left-color: var(--bad); }
-.entry.faithful { border-left-color: var(--good); }
-.entry .head { display: flex; gap: 0.5rem; align-items: baseline;
-               flex-wrap: wrap; margin-bottom: 0.25rem; }
-.entry .pid { font-weight: 700; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.entry .arch { color: var(--ink-soft); font-size: 0.85rem; }
+/* Role is stated in words on every entry, so the edge colour is a second cue,
+   not the carrier (§7.9). Vermilion marks the Traitor — a punctuation of a
+   few pixels per card, inside a view that already carries Cobalt in the nav,
+   which is what §2's dependency law requires. Faithful takes a plain rule. */
+.entry.traitor { border-left-color: var(--vermilion); }
+.entry.faithful { border-left-color: var(--rule-strong); }
+.entry .head { display: flex; gap: var(--s8); align-items: baseline;
+               flex-wrap: wrap; margin-bottom: var(--s4); }
+.entry .pid { font-weight: 500; font-family: var(--mono); }
+.entry .arch { color: var(--text-muted); font-size: var(--t-small); }
 .entry .tag {
-  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-  padding: 0.08rem 0.45rem; border-radius: 999px;
-  background: rgba(127,127,127,0.14); color: var(--ink-soft);
+  font-family: var(--mono); font-size: var(--t-micro); font-weight: 500;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 0 var(--s8); border-radius: var(--radius);
+  border: 1px solid var(--rule); background: var(--surface-2); color: var(--text-muted);
 }
-.entry .role { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; }
-.entry .role.TRAITOR { color: var(--bad); }
-.entry .role.FAITHFUL { color: var(--good); }
-.entry .seq { margin-left: auto; color: var(--ink-soft); font-size: 0.78rem;
-              font-variant-numeric: tabular-nums; }
-.entry p { margin: 0; white-space: pre-wrap; font-size: 0.94rem; }
-.entry mark { background: #ffe9a8; color: inherit; padding: 0 0.1em; border-radius: 2px; }
-@media (prefers-color-scheme: dark) { .entry mark { background: #6b551f; } }
-.counts { color: var(--ink-soft); font-size: 0.86rem; margin: 0.4rem 0; }
-.legend { color: var(--ink-soft); font-size: 0.82rem; margin: 0.2rem 0 0 0; }
+.entry .role {
+  display: inline-flex; align-items: baseline; gap: var(--s4);
+  font-family: var(--mono); font-size: var(--t-micro); font-weight: 500;
+  letter-spacing: 0.04em; color: var(--text);
+}
+.entry .role::before {
+  content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--n500);
+}
+.entry .role.TRAITOR::before { background: var(--vermilion); }
+.entry .seq { margin-left: auto; color: var(--text-muted); font-family: var(--mono);
+              font-size: var(--t-micro); font-variant-numeric: tabular-nums; }
+.entry p { margin: 0; white-space: pre-wrap; font-size: var(--t-body); line-height: 1.5; }
+/* Search hits are magnitude-free — a flat Cobalt tint, text left at Ink so the
+   contrast floor holds. */
+.entry mark { background: var(--mark); color: var(--text);
+              padding: 0 0.1em; border-radius: 2px; }
+.counts { color: var(--text-muted); font-size: var(--t-small); margin: var(--s8) 0;
+          font-variant-numeric: tabular-nums; }
+.legend { color: var(--text-muted); font-size: var(--t-caption); margin: var(--s4) 0 0 0; }
 """
 
 SCRIPT = r"""
@@ -269,7 +285,8 @@ def build(out_dir, index):
             "</div>",
             '<div class="banner hidden" id="err"></div>',
             '<p class="counts" id="counts"></p>',
-            '<p class="legend">Left edge: red for a Traitor, green for a Faithful. '
+            '<p class="legend">Every entry names its role in words; the marked left '
+            'edge and the dot beside the role are the same fact repeated for scanning. '
             'Roles are shown because the trace records them — the players did not '
             'know them.</p>',
             '<div class="timeline" id="timeline"></div>',

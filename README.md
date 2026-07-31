@@ -183,6 +183,40 @@ refuse on `file://` URLs, so opening those two from disk shows an explanatory
 message: to preview locally, run `python3 -m http.server` inside `reports/`.
 `index.html` and `params.html` inline everything and work from disk.
 
+### How it looks — HOUSE STYLE v3
+Every page on the site, dashboard and standalone report alike, is styled from
+one place: `report_common.CSS`, which carries the design system's tokens
+verbatim and maps them onto role variables (`--bg`, `--surface`, `--text`,
+`--rule`, `--accent`). Change a token there and the whole site moves.
+
+The rules that actually constrain what gets built here:
+
+* **Colour is information, never decoration.** A view is ~89% neutral. Cobalt
+  marks one thing — the active nav tab, a slider you moved, a link. Vermilion
+  appears in exactly one place on the site, the Traitor edge in the trace, and
+  only ever alongside Cobalt.
+* **Every chart is one family of tints** — Mode A, the Cobalt ramp. No chart
+  mixes families or introduces a foreign hue. Mono ramps imply ordering, so
+  nominal categories are separated by position, direct label, dash and point
+  shape instead.
+* **Nothing is encoded by colour alone.** Exceptional bars are marked ▼ on the
+  axis, roles are spelled out in words, status pills carry their state as text.
+  Every page reads in grayscale, and all text clears 4.5:1 (3:1 for large) in
+  both the light and dark schemes.
+* **Flat.** Hairlines and fills, no shadows; 8pt spacing; 4px radius on cards
+  and controls, 0 on tables and rules.
+
+Roboto and Roboto Mono are named first in the font stacks but no webfont is
+fetched — the reports are self-contained by design, and the system sanctions
+the system-ui/Arial fallback. The dark scheme is an extension: the spec is
+light-only, so dark reverses the neutrals and moves the accent up the Cobalt
+ramp to `#84A2FA`, which Cobalt itself cannot reach on an Ink ground.
+
+Reports already committed are one-shot outputs — re-running the simulation to
+restyle one would change its numbers. `scripts/restyle_reports.py` swaps their
+embedded `<style>` block for the current CSS and touches nothing else; both
+workflows run it before rebuilding, and `--check` fails if any report is stale.
+
 ### One-time setup
 **Pages.** Settings → Pages → **Source: GitHub Actions**. Branch-based Pages
 can only serve `/` or `/docs`, so `reports/` is published by
@@ -227,7 +261,8 @@ secret — nothing else refers to the key.
 | `scripts/run_structural_ci.py` | CI wrapper: imports run_structural's own run/render, adds a collision-free filename, a history row, chart data, and a `--games` clamp. |
 | `scripts/run_reasoning_ci.py` | CI wrapper: stages 2 and 3 in one process under one USD ceiling, publishes traces, plus `--mock`. |
 | `scripts/make_index.py` | builds all four dashboard pages from what is on disk. |
-| `scripts/dashboard.py` | shared page shell, nav, palette, Chart.js loader, fetch helper. |
+| `scripts/dashboard.py` | shared page shell, nav, chart palette (HOUSE STYLE Mode A), Chart.js loader, fetch helper. |
+| `scripts/restyle_reports.py` | re-skins already-generated reports to the current `report_common.CSS`; `--check` fails if any is stale. |
 | `scripts/page_charts.py`, `page_params.py`, `page_trace.py` | the three non-index pages. |
 | `scripts/publish_traces.py` | copies traces into `reports/data/traces/` for the viewer; also a CLI for importing an older run's traces. |
 | `scripts/report_history.py` | the `history.json` schema, and which of its fields get a column. |

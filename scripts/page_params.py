@@ -25,34 +25,68 @@ from archetypes import ALL_IDS, ARCHETYPES, PARAM_KEYS, PARAMS_DIGEST, load_para
 import dashboard as dash
 
 EXTRA_CSS = """
-.arch { border: 1px solid var(--line); background: var(--panel); border-radius: 8px;
-        padding: 0.9rem 1.1rem; margin-bottom: 0.9rem; }
-.arch > header { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
-                 margin-bottom: 0.6rem; }
-.arch h3 { margin: 0; font-size: 1rem; color: var(--accent); }
-.arch .aid { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-             font-size: 0.85rem; color: var(--ink-soft); }
-.arch .changed-count { margin-left: auto; font-size: 0.82rem; color: var(--ink-soft); }
-.arch.dirty { border-color: var(--accent); }
+.arch { border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-lg);
+        padding: var(--s16); margin-bottom: var(--s16); }
+.arch > header { display: flex; align-items: baseline; gap: var(--s12); flex-wrap: wrap;
+                 margin-bottom: var(--s12); }
+.arch h3 { margin: 0; font-size: var(--t-h4); line-height: 1.3; font-weight: 500;
+           color: var(--text); }
+.arch .aid { font-family: var(--mono); font-size: var(--t-small); color: var(--text-muted); }
+.arch .changed-count { margin-left: auto; font-size: var(--t-caption);
+                       font-family: var(--mono); color: var(--text-muted); }
+/* "Changed from the committed defaults" is the one thing on this page worth
+   colour, so it is the only place Cobalt appears in the body. */
+.arch.dirty { border-color: var(--cobalt); }
+.arch.dirty .changed-count { color: var(--accent); font-weight: 500; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 0.35rem 1.4rem; }
+        gap: var(--s4) var(--s24); }
 .row { display: grid; grid-template-columns: 6.5rem 1fr 3.2rem; align-items: center;
-       gap: 0.5rem; padding: 0.15rem 0; }
-.row label { font-size: 0.85rem; color: var(--ink-soft); }
-.row.dirty label { color: var(--accent); font-weight: 600; }
-.row output { font-size: 0.85rem; text-align: right; font-variant-numeric: tabular-nums; }
+       gap: var(--s8); padding: var(--s4) 0; }
+.row label { font-size: var(--t-small); color: var(--text-muted); }
+.row.dirty label { color: var(--accent); font-weight: 500; }
+.row output { font-family: var(--mono); font-size: var(--t-small); text-align: right;
+              font-variant-numeric: tabular-nums; }
 .row .dot { display: none; }
 .row.dirty output::after { content: " •"; color: var(--accent); }
-input[type=range] { width: 100%; accent-color: var(--accent); }
-.sticky-actions {
-  position: sticky; bottom: 0; background: var(--paper);
-  border-top: 1px solid var(--line); padding: 0.7rem 0; margin-top: 1rem;
-  display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; z-index: 4;
+/* accent-color would fill the whole track, and 120 filled tracks on one page
+   is nowhere near §2's ~89% neutral. The track stays a neutral rule and only
+   the thumb — which is the part that actually carries the value — is Cobalt. */
+input[type=range], input.ctl[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 16px; background: transparent; cursor: pointer;
+  border: none; padding: 0;
 }
-.sticky-actions .status { font-size: 0.86rem; color: var(--ink-soft); }
-.copied { color: var(--good); font-weight: 600; }
-details.preview { margin-top: 0.8rem; }
-details.preview summary { cursor: pointer; font-size: 0.9rem; color: var(--accent); }
+input[type=range]::-webkit-slider-runnable-track {
+  height: 2px; background: var(--rule-strong); border-radius: 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 12px; height: 12px; margin-top: -5px; border: none;
+  border-radius: 50%; background: var(--accent);
+}
+input[type=range]::-moz-range-track {
+  height: 2px; background: var(--rule-strong); border-radius: 0;
+}
+input[type=range]::-moz-range-thumb {
+  width: 12px; height: 12px; border: none; border-radius: 50%; background: var(--accent);
+}
+input[type=range]:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 2px; }
+.sticky-actions {
+  position: sticky; bottom: 0; background: var(--bg);
+  border-top: 1px solid var(--rule); padding: var(--s12) 0; margin-top: var(--s16);
+  display: flex; gap: var(--s8); align-items: center; flex-wrap: wrap; z-index: 4;
+}
+.sticky-actions .status { font-size: var(--t-small); color: var(--text-muted); }
+/* The button already says "Copied"; the check is the second cue. On a
+   secondary button Success rides the border and the glyph, so the label stays
+   at full contrast. On the Cobalt primary the glyph stays white — Success on
+   Cobalt is neither legible nor a pairing the system allows. */
+.copied { font-weight: 500; }
+.copied::before { content: "\\2713\\00a0"; }
+button.btn.copied:not(.primary) { color: var(--text); border-color: var(--success); }
+button.btn.copied:not(.primary)::before { color: var(--success); }
+details.preview { margin-top: var(--s12); }
+details.preview summary { cursor: pointer; font-size: var(--t-small); color: var(--accent); }
 """
 
 SCRIPT = r"""
