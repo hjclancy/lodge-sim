@@ -7,210 +7,296 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8F%94%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
 :root {
-  --ink: #2a2622;
-  --ink-soft: #5a5349;
-  --paper: #faf7f0;
-  --panel: #ffffff;
-  --line: #e2dccd;
-  --accent: #6b3f2a;
-  --accent-soft: #9c6b4c;
-  --disclaimer-bg: #fff3d6;
-  --disclaimer-border: #c9962f;
-  --good: #3f6b3f;
-  --bad: #a13b3b;
+  /* ---- HOUSE STYLE v3 tokens (§8), verbatim ---- */
+  --ink: #101215; --n800: #2C313A; --n600: #5A606D; --n500: #7C828E;
+  --n300: #C4C8D0; --n200: #E3E5EA; --n100: #F1F2F5; --n050: #F8F9FB;
+  --paper: #FFFFFF;
+  --cobalt: #0A45F5; --cobalt-press: #0836C2; --cobalt-tint: #C2D0FC;
+  --vermilion: #F01818;
+  --success: #10A257; --warning: #F5A623; --danger: #E5352B; --info: #0A45F5;
+  /* chart Mode A — Cobalt tints (dark->light) */
+  --cA1: #062A99; --cA2: #0A45F5; --cA3: #4773F7; --cA4: #84A2FA; --cA5: #C2D0FC;
+  /* chart Mode B — Vermilion tints (dark->light) */
+  --cB1: #900E0E; --cB2: #F01818; --cB3: #F55C5C; --cB4: #F98F8F; --cB5: #FDBFBF;
+  --o100: 1; --o72: .72; --o48: .48; --o24: .24; --o12: .12; --o06: .06;
+  --radius: 4px; --radius-lg: 8px;
+  --sans: 'Roboto', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --mono: 'Roboto Mono', ui-monospace, Menlo, monospace;
+
+  /* ---- 8pt spacing (§6) ---- */
+  --s4: 4px; --s8: 8px; --s12: 12px; --s16: 16px; --s24: 24px;
+  --s32: 32px; --s48: 48px; --s64: 64px; --s96: 96px;
+
+  /* ---- type scale (§5), 1.25 major third on a 16px base ---- */
+  --t-display: 49px; --t-h1: 39px; --t-h2: 31px; --t-h3: 25px; --t-h4: 20px;
+  --t-body: 16px; --t-small: 14px; --t-caption: 13px; --t-micro: 11px;
+
+  /* ---- roles: light ---- */
+  --bg: var(--n050);
+  --surface: var(--paper);
+  --surface-2: var(--n100);
+  --zebra: var(--n050);
+  --text: var(--ink);
+  --text-muted: var(--n600);
+  --rule: var(--n200);
+  --rule-strong: var(--n300);
+  --accent: var(--cobalt);
+  --accent-press: var(--cobalt-press);
+  --accent-tint: var(--cobalt-tint);
+  --on-accent: var(--paper);
+  --mark: var(--cobalt-tint);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Derived, not specified: the two lifted surfaces are Ink stepped toward
+       N-800 so panels separate from the ground without a shadow. */
+    --bg: var(--ink);
+    --surface: #191C22;
+    --surface-2: var(--n800);
+    --zebra: #15181D;
+    --text: var(--n100);
+    --text-muted: var(--n300);
+    --rule: #343A44;
+    --rule-strong: #464D59;
+    --accent: var(--cA4);
+    --accent-press: var(--cA5);
+    --accent-tint: #1C2B58;
+    --on-accent: var(--ink);
+    --mark: #22346B;
+  }
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  padding: 0 0 4rem 0;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: -apple-system, "Segoe UI", Georgia, "Iowan Old Style", serif;
-  line-height: 1.55;
+  padding: 0 0 var(--s64) 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 .wrap {
   max-width: 920px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--s24);
 }
+/* Flat by default (§6): the banner is neutral, and the single Cobalt rule at
+   the top is the view's one Cobalt moment. */
 header.page {
-  background: var(--accent);
-  color: #fbf3e6;
-  padding: 2.2rem 0 1.6rem 0;
-  margin-bottom: 2rem;
+  background: var(--surface);
+  border-top: 3px solid var(--cobalt);
+  border-bottom: 1px solid var(--rule);
+  color: var(--text);
+  padding: var(--s48) 0 var(--s32) 0;
+  margin-bottom: var(--s48);
 }
 header.page .wrap h1 {
-  margin: 0 0 0.3rem 0;
-  font-size: 1.7rem;
-  font-weight: 600;
+  margin: 0 0 var(--s8) 0;
+  font-size: var(--t-h1);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 header.page .wrap .meta {
-  color: #ecd9bd;
-  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-size: var(--t-small);
+  line-height: 1.45;
 }
 h2 {
-  font-size: 1.25rem;
-  border-bottom: 2px solid var(--line);
-  padding-bottom: 0.35rem;
-  margin-top: 2.4rem;
+  font-size: var(--t-h2);
+  line-height: 1.15;
+  font-weight: 500;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: var(--s8);
+  margin-top: var(--s48);
+  margin-bottom: var(--s16);
 }
 h3 {
-  font-size: 1.05rem;
-  color: var(--accent);
-  margin-top: 1.6rem;
+  font-size: var(--t-h3);
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--text);
+  margin-top: var(--s32);
+  margin-bottom: var(--s8);
 }
+h4 { font-size: var(--t-h4); line-height: 1.3; font-weight: 500; }
 p { max-width: 72ch; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:hover { color: var(--accent-press); }
 .summary {
-  font-size: 1.08rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 1.1rem 1.3rem;
+  font-size: var(--t-body);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--cobalt);
+  border-radius: var(--radius);
+  padding: var(--s16) var(--s24);
 }
+/* Warning is functional state, so it carries the rule; the fill stays neutral
+   to keep the view's colour coverage where §2 wants it. */
 .disclaimer {
-  background: var(--disclaimer-bg);
-  border-left: 5px solid var(--disclaimer-border);
-  border-radius: 4px;
-  padding: 1rem 1.3rem;
-  margin: 1.4rem 0;
-  font-size: 0.98rem;
+  background: var(--surface-2);
+  border-left: 4px solid var(--warning);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: var(--s16) var(--s24);
+  margin: var(--s24) 0;
+  font-size: var(--t-small);
 }
-.disclaimer strong { color: #6b4c00; }
+.disclaimer strong { color: var(--text); font-weight: 500; }
 table {
   border-collapse: collapse;
   width: 100%;
-  margin: 0.8rem 0 1.6rem 0;
-  background: var(--panel);
-  font-size: 0.95rem;
+  margin: var(--s12) 0 var(--s24) 0;
+  background: var(--surface);
+  font-size: var(--t-small);
+  border-radius: 0;
 }
 caption {
   caption-side: top;
   text-align: left;
-  font-weight: 600;
-  color: var(--accent);
-  padding-bottom: 0.3rem;
+  font-weight: 500;
+  color: var(--text);
+  padding-bottom: var(--s8);
 }
 th, td {
-  border: 1px solid var(--line);
-  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--rule);
+  padding: var(--s8) var(--s12);
   text-align: right;
 }
+/* Mono for data (§5); the label column stays sans. */
+td:not(:first-child) { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 th:first-child, td:first-child { text-align: left; }
 thead th {
-  background: #f1e9d8;
-  color: var(--ink);
-  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 500;
 }
-tbody tr:nth-child(even) { background: #fbf8f1; }
+tbody tr:nth-child(even) { background: var(--zebra); }
 .note {
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-  margin: -0.9rem 0 1.6rem 0;
+  color: var(--text-muted);
+  font-size: var(--t-caption);
+  line-height: 1.4;
+  margin: calc(-1 * var(--s12)) 0 var(--s24) 0;
 }
+/* Never colour alone (§7.9): the dot is a second cue and the pill's own text
+   states the state, so the label reads in grayscale. */
 .pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s8);
+  padding: var(--s4) var(--s8);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--t-caption);
+  font-weight: 500;
+}
+.pill::before {
+  content: "";
   display: inline-block;
-  padding: 0.1rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 600;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--n500);
 }
-.pill.ok { background: #e2ecdd; color: var(--good); }
-.pill.bad { background: #f4dede; color: var(--bad); }
+.pill.ok::before { background: var(--success); }
+.pill.bad::before { background: var(--danger); }
+code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  padding: 0 var(--s4);
+  border-radius: var(--radius);
+}
 footer.page {
-  margin-top: 3rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line);
-  color: var(--ink-soft);
-  font-size: 0.85rem;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #ece6d9;
-    --ink-soft: #b8b0a0;
-    --paper: #201d18;
-    --panel: #2a2620;
-    --line: #453f34;
-    --accent: #d99b6c;
-    --accent-soft: #c98a58;
-    --disclaimer-bg: #3a2f14;
-    --disclaimer-border: #d9a53a;
-    --good: #8fbf8f;
-    --bad: #e08a8a;
-  }
-  header.page { background: #3a2416; color: #f3e6d4; }
-  header.page .wrap .meta { color: #d9c2a0; }
-  thead th { background: #362f22; }
-  tbody tr:nth-child(even) { background: #262219; }
-  .disclaimer strong { color: #f0c874; }
+  margin-top: var(--s48);
+  padding-top: var(--s16);
+  border-top: 1px solid var(--rule);
+  color: var(--text-muted);
+  font-size: var(--t-caption);
 }
 
 .wrap { max-width: 1180px; }
 .prose, .summary, .disclaimer, footer.page { max-width: 80ch; }
-a { color: var(--accent); }
 nav.site {
-  background: var(--panel); border-bottom: 1px solid var(--line);
-  margin-bottom: 2rem; position: sticky; top: 0; z-index: 5;
+  background: var(--surface); border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--s32); position: sticky; top: 0; z-index: 5;
 }
-nav.site .wrap { display: flex; gap: 0.3rem; flex-wrap: wrap; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+nav.site .wrap { display: flex; gap: var(--s4); flex-wrap: wrap;
+                 padding-top: var(--s8); padding-bottom: var(--s8); }
 nav.site a {
-  padding: 0.35rem 0.85rem; border-radius: 6px; text-decoration: none;
-  color: var(--ink-soft); font-size: 0.92rem; font-weight: 600;
+  padding: var(--s8) var(--s12); border-radius: var(--radius); text-decoration: none;
+  color: var(--text-muted); font-size: var(--t-small); font-weight: 500;
 }
-nav.site a:hover { background: var(--paper); color: var(--accent); }
-nav.site a[aria-current="page"] { background: var(--accent); color: #fbf3e6; }
+nav.site a:hover { background: var(--surface-2); color: var(--accent); }
+/* The active tab is the nav's Cobalt moment; the aria-current attribute
+   carries the same fact for anyone not reading colour. */
+nav.site a[aria-current="page"] {
+  background: var(--cobalt); color: var(--paper); font-weight: 500;
+}
 header.page { margin-bottom: 0; }
-.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
-.scroll table { margin: 0; font-size: 0.88rem; }
-.scroll th, .scroll td { padding: 0.42rem 0.6rem; }
-.scroll + p.note { margin-top: 0.3rem; }
-td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-.kind { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 999px;
-        font-size: 0.78rem; font-weight: 600; border: 1px solid var(--line); }
-.kind.structural { background: #e6edf5; color: #2f4a6b; }
-.kind.reasoning  { background: #f0e8f5; color: #573b6b; }
-.kind.other      { background: #ece9e2; color: var(--ink-soft); }
-.controls { margin: 1.2rem 0 0.8rem 0; display: flex; gap: 0.5rem;
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: var(--s16); }
+.scroll table { margin: 0; font-size: var(--t-caption); }
+.scroll th, .scroll td { padding: var(--s8) var(--s12); }
+.scroll + p.note { margin-top: var(--s4); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums;
+                 font-family: var(--mono); }
+th.num { font-family: var(--sans); }
+/* Report kind is a nominal category, so it is carried by the label, not by a
+   hue per kind (§7.3, §7.9). */
+.kind {
+  display: inline-block; padding: 0 var(--s8); border-radius: var(--radius);
+  font-family: var(--mono); font-size: var(--t-micro); line-height: 1.6;
+  font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid var(--rule); background: var(--surface-2); color: var(--text-muted);
+}
+.controls { margin: var(--s24) 0 var(--s12) 0; display: flex; gap: var(--s8);
             flex-wrap: wrap; align-items: center; }
-.controls .label { font-size: 0.85rem; color: var(--ink-soft); }
+.controls .label { font-size: var(--t-small); color: var(--text-muted); font-weight: 500; }
 button.btn, select.ctl, input.ctl {
-  font: inherit; font-size: 0.88rem; padding: 0.3rem 0.8rem;
-  border-radius: 6px; border: 1px solid var(--line);
-  background: var(--panel); color: var(--ink);
+  font-family: var(--sans); font-size: var(--t-small); padding: var(--s8) var(--s12);
+  border-radius: var(--radius); border: 1px solid var(--rule-strong);
+  background: var(--surface); color: var(--text);
 }
-button.btn { cursor: pointer; font-weight: 600; }
+select.ctl:focus-visible, input.ctl:focus-visible, button.btn:focus-visible {
+  outline: 2px solid var(--cobalt); outline-offset: 1px;
+}
+button.btn { cursor: pointer; font-weight: 500; }
 button.btn:hover { border-color: var(--accent); color: var(--accent); }
-button.btn.primary { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
-button.btn.primary:hover { color: #fff; opacity: 0.92; }
-button.btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
+button.btn.primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+button.btn.primary:hover { background: var(--cobalt-press); border-color: var(--cobalt-press);
+                           color: var(--paper); }
+button.btn[aria-pressed="true"] { background: var(--cobalt); border-color: var(--cobalt);
+                                  color: var(--paper); }
 .chartbox {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-  padding: 1rem 1.1rem 0.8rem 1.1rem; margin: 0.6rem 0 1.6rem 0;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg);
+  padding: var(--s16) var(--s16) var(--s12) var(--s16); margin: var(--s8) 0 var(--s24) 0;
 }
-.chartbox h3 { margin: 0 0 0.2rem 0; color: var(--accent); font-size: 1rem; }
-.chartbox .cap { color: var(--ink-soft); font-size: 0.85rem; margin: 0 0 0.7rem 0; max-width: 78ch; }
+.chartbox h3 { margin: 0 0 var(--s4) 0; color: var(--text);
+               font-size: var(--t-h4); line-height: 1.3; font-weight: 500; }
+.chartbox .cap { color: var(--text-muted); font-size: var(--t-small); line-height: 1.45;
+                 margin: 0 0 var(--s12) 0; max-width: 78ch; }
 .chartwrap { position: relative; height: 340px; }
 .banner {
-  border-radius: 6px; padding: 0.8rem 1.1rem; margin: 1rem 0;
-  border-left: 5px solid var(--disclaimer-border); background: var(--disclaimer-bg);
-  font-size: 0.95rem;
+  border-radius: 0 var(--radius) var(--radius) 0; padding: var(--s12) var(--s16);
+  margin: var(--s16) 0;
+  border-left: 4px solid var(--warning); background: var(--surface-2);
+  font-size: var(--t-small);
 }
 .banner.hidden { display: none; }
-.empty { color: var(--ink-soft); font-style: italic; }
-code { font-size: 0.9em; background: rgba(127,127,127,0.13); padding: 0.05rem 0.3rem; border-radius: 3px; }
+.empty { color: var(--text-muted); font-style: italic; }
 pre.code {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
-  padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.45;
-}
-@media (prefers-color-scheme: dark) {
-  .kind.structural { background: #24313f; color: #a8c6e6; }
-  .kind.reasoning  { background: #332a3d; color: #d0b3e6; }
-  .kind.other      { background: #322d25; color: var(--ink-soft); }
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: var(--s12) var(--s16); overflow-x: auto;
+  font-family: var(--mono); font-size: var(--t-caption); line-height: 1.45;
 }
 
-.paramtable { font-size: 0.82rem; }
-.paramtable td, .paramtable th { padding: 0.3rem 0.5rem; }
-.meta-line { color: var(--ink-soft); font-size: 0.9rem; margin: 0.2rem 0 1rem 0; }
-.meta-line strong { color: var(--ink); }
+.paramtable { font-size: var(--t-caption); }
+.paramtable td, .paramtable th { padding: var(--s4) var(--s8); }
+.meta-line { color: var(--text-muted); font-size: var(--t-small); margin: var(--s4) 0 var(--s16) 0; }
+.meta-line strong { color: var(--text); font-family: var(--mono); font-weight: 500; }
 </style>
 </head>
 <body>
@@ -223,21 +309,32 @@ pre.code {
 <div class="controls"><span class="label">Batch</span><select class="ctl" id="batch"><option value="0">2026-07-27 · Structural · 10,000 games · 10 overrides a8034941</option><option value="1">2026-07-27 · Structural · 10,000 games · 12 overrides a50f704d</option><option value="2">2026-07-27 · Structural · 10,000 games · 10 overrides 6f4d179c</option><option value="3">2026-07-27 · Structural · 10,000 games · defaults ff187ff2</option><option value="4">2026-07-27 · Structural · 5,000 games · defaults ff187ff2</option><option value="5">2026-07-27 · Structural · 5,000 games · defaults ff187ff2</option><option value="6">2026-07-27 · Structural · 5,000 games · defaults ff187ff2</option><option value="7">2026-07-27 · Structural · 5,000 games · defaults ff187ff2</option><option value="8">2026-07-27 · Reasoning · 2 games · defaults ff187ff2</option></select></div>
 <div class="banner hidden" id="err"></div>
 <div id="meta"></div>
-<div id="charts" style="display:none"><div class="chartbox"><h3>Archetype survival to end, by role</h3><p class="cap">Share of games in which an archetype was still alive at the end, split by the role it drew. The §5.2 bias applies: this speech model discards volume and interruption, so loud archetypes are under-modelled and quiet ones over-modelled.</p><div class="chartwrap"><canvas id="c-survival"></canvas></div></div><div class="chartbox"><h3>Elimination timing by phase</h3><p class="cap">Where in the weekend players leave, and how. Murder and banishment are stacked because they are the only two ways out; the referee records both directly, so unlike the reasoning report&#x27;s timeline nothing here is inferred.</p><div class="chartwrap"><canvas id="c-elimination"></canvas></div></div><div class="chartbox"><h3>Nomination accuracy by archetype (§17)</h3><p class="cap">Share of a Faithful player&#x27;s nominations that named an actual Traitor. Base rate is 25–33%: three Traitors among the rest of the table. An archetype below the base rate is evidence of a defective parameter mapping in heuristic_bots.py, not of a game property — canon §17 requires this to come back clean before the win split is treated as a balance problem.</p><div class="chartwrap"><canvas id="c-nomination"></canvas></div></div><div class="chartbox"><h3>Tie ladder step distribution (§5.4)</h3><p class="cap">Which step of the deterministic ladder resolved each tied ballot. RPS is gone; step 3 always resolves because nomination order is a strict total ordering. SMALL_COUNT_TIE_FORCED is the only random elimination left and is reachable only below 5 alive, where there is no nomination record to read.</p><div class="chartwrap"><canvas id="c-ladder"></canvas></div></div><div class="chartbox"><h3>Plate detection by archetype (§8.3)</h3><p class="cap">Detections per game. At this tier detection is a gated roll on the archetype&#x27;s `object` parameter, not a reasoning trace — a deliberately different mechanism from the Claude tier&#x27;s reasoning-gated detection. Expect A06 and A12 to dominate.</p><div class="chartwrap"><canvas id="c-plate"></canvas></div></div><div class="chartbox"><h3>Float event and mechanic rates</h3><p class="cap">Share of games in which each event fired at least once.</p><div class="chartwrap"><canvas id="c-floats"></canvas></div></div></div>
+<div id="charts" style="display:none"><div class="chartbox"><h3>Archetype survival to end, by role</h3><p class="cap">Share of games in which an archetype was still alive at the end, split by the role it drew. The §5.2 bias applies: this speech model discards volume and interruption, so loud archetypes are under-modelled and quiet ones over-modelled.</p><div class="chartwrap"><canvas id="c-survival"></canvas></div></div><div class="chartbox"><h3>Elimination timing by phase</h3><p class="cap">Where in the weekend players leave, and how. Murder and banishment are stacked because they are the only two ways out; the referee records both directly, so unlike the reasoning report&#x27;s timeline nothing here is inferred.</p><div class="chartwrap"><canvas id="c-elimination"></canvas></div></div><div class="chartbox"><h3>Nomination accuracy by archetype (§17)</h3><p class="cap">Share of a Faithful player&#x27;s nominations that named an actual Traitor. Base rate is 25–33%: three Traitors among the rest of the table. An archetype below the base rate is evidence of a defective parameter mapping in heuristic_bots.py, not of a game property — canon §17 requires this to come back clean before the win split is treated as a balance problem. Archetypes under the base rate are marked ▼ on the axis as well as drawn in the strongest tint.</p><div class="chartwrap"><canvas id="c-nomination"></canvas></div></div><div class="chartbox"><h3>Tie ladder step distribution (§5.4)</h3><p class="cap">Which step of the deterministic ladder resolved each tied ballot. RPS is gone; step 3 always resolves because nomination order is a strict total ordering. SMALL_COUNT_TIE_FORCED — marked ▼ and drawn in the strongest tint — is the only random elimination left, and is reachable only below 5 alive, where there is no nomination record to read.</p><div class="chartwrap"><canvas id="c-ladder"></canvas></div></div><div class="chartbox"><h3>Plate detection by archetype (§8.3)</h3><p class="cap">Detections per game. At this tier detection is a gated roll on the archetype&#x27;s `object` parameter, not a reasoning trace — a deliberately different mechanism from the Claude tier&#x27;s reasoning-gated detection. Expect A06 and A12 to dominate.</p><div class="chartwrap"><canvas id="c-plate"></canvas></div></div><div class="chartbox"><h3>Float event and mechanic rates</h3><p class="cap">Share of games in which each event fired at least once.</p><div class="chartwrap"><canvas id="c-floats"></canvas></div></div></div>
 <footer class="page">Generated by scripts/ from the committed reports and history. Every page is a single file; no build step.</footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 <script>
 
 
-const PALETTE = ["#6b3f2a", "#3f6b3f", "#2f4a6b", "#a13b3b", "#8a6b1f", "#573b6b", "#1f6b6b", "#9c6b4c"];
-function themeInk() {
-  return getComputedStyle(document.body).getPropertyValue('color') || '#2a2622';
+// The Mode A ramp, ordered by EMPHASIS rather than by lightness: PALETTE[0] is
+// always the step that carries hardest against the page. On Paper that is the
+// dark end; on an Ink ground the ramp reverses, because #062A99 on #191C22 is
+// under the 3:1 mark floor while #C2D0FC is the one that reads. Same family,
+// same five steps — §3 is about the family, not the direction.
+const RAMP_A = ["#062A99", "#0A45F5", "#4773F7", "#84A2FA", "#C2D0FC"];
+const PALETTE = window.matchMedia('(prefers-color-scheme: dark)').matches
+  ? RAMP_A.slice().reverse() : RAMP_A;
+// Series beyond the fifth reuse a tint but change dash and point shape, so no
+// two series on one chart are told apart by colour alone.
+const DASHES = [[], [6, 4], [2, 3]];
+const POINTS = ['circle', 'rect', 'triangle'];
+function token(name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
 }
-function gridColor() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)';
-}
+function themeInk() { return token('--text', '#101215'); }
+function themeMuted() { return token('--text-muted', '#5A606D'); }
+function gridColor() { return token('--rule', '#E3E5EA'); }
 function chartsAvailable(bannerId) {
   if (typeof Chart !== 'undefined') return true;
   const b = document.getElementById(bannerId);
@@ -255,13 +352,17 @@ function baseOptions(extra) {
     responsive: true, maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
     plugins: {
-      legend: { labels: { color: themeInk(), boxWidth: 12, font: { size: 12 } } },
-      tooltip: { padding: 10 }
+      legend: { labels: { color: themeInk(), boxWidth: 12, boxHeight: 12,
+                          font: { family: 'Roboto, system-ui, Arial, sans-serif', size: 12 } } },
+      tooltip: { padding: 10, backgroundColor: '#101215', cornerRadius: 4,
+                 titleFont: { family: 'Roboto, system-ui, Arial, sans-serif', weight: '500' },
+                 bodyFont: { family: 'Roboto Mono, ui-monospace, Menlo, monospace' } }
     },
     scales: {
-      x: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { color: gridColor() } },
-      y: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { color: gridColor() },
-           beginAtZero: true }
+      x: { ticks: { color: themeMuted(), font: { size: 11 } }, grid: { color: gridColor() },
+           border: { color: gridColor() } },
+      y: { ticks: { color: themeMuted(), font: { size: 11 } }, grid: { color: gridColor() },
+           border: { color: gridColor() }, beginAtZero: true }
     }
   };
   return Object.assign(o, extra || {});
@@ -289,6 +390,19 @@ function showError(id, err) {
 const BATCHES = [{"id": "structural_2026-07-27-8", "label": "2026-07-27 \u00b7 Structural \u00b7 10,000 games \u00b7 10 overrides a8034941", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27-8.json", "report": "structural_2026-07-27-8.html"}, {"id": "structural_2026-07-27-7", "label": "2026-07-27 \u00b7 Structural \u00b7 10,000 games \u00b7 12 overrides a50f704d", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27-7.json", "report": "structural_2026-07-27-7.html"}, {"id": "structural_2026-07-27-6", "label": "2026-07-27 \u00b7 Structural \u00b7 10,000 games \u00b7 10 overrides 6f4d179c", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27-6.json", "report": "structural_2026-07-27-6.html"}, {"id": "structural_2026-07-27-5", "label": "2026-07-27 \u00b7 Structural \u00b7 10,000 games \u00b7 defaults ff187ff2", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27-5.json", "report": "structural_2026-07-27-5.html"}, {"id": "structural_2026-07-27-4", "label": "2026-07-27 \u00b7 Structural \u00b7 5,000 games \u00b7 defaults ff187ff2", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27-4.json", "report": "structural_2026-07-27-4.html"}, {"id": "structural_2026-07-27-3", "label": "2026-07-27 \u00b7 Structural \u00b7 5,000 games \u00b7 defaults ff187ff2", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27-3.json", "report": "structural_2026-07-27-3.html"}, {"id": "structural_2026-07-27-2", "label": "2026-07-27 \u00b7 Structural \u00b7 5,000 games \u00b7 defaults ff187ff2", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27-2.json", "report": "structural_2026-07-27-2.html"}, {"id": "structural_2026-07-27", "label": "2026-07-27 \u00b7 Structural \u00b7 5,000 games \u00b7 defaults ff187ff2", "kind": "structural", "date": "2026-07-27", "data": "data/structural_2026-07-27.json", "report": "structural_2026-07-27.html"}, {"id": "reasoning_2026-07-27", "label": "2026-07-27 \u00b7 Reasoning \u00b7 2 games \u00b7 defaults ff187ff2", "kind": "reasoning", "date": "2026-07-27", "data": "data/reasoning_2026-07-27.json", "report": "reasoning_2026-07-27.html"}];
 const charts = {};
 
+// HOUSE STYLE §3: every chart on this page is Mode A — one family, Cobalt
+// tints. Two-category charts take well-separated steps of the ramp rather
+// than two hues, and each keeps its legend so the split is never read from
+// tint alone. Reference lines are neutral, because an annotation is not data.
+// PALETTE is ordered by emphasis for the active scheme, so these names hold in
+// both: C_STRONG is whichever end carries hardest against the page. Pairs take
+// steps 0 and 2 rather than adjacent ones — that keeps both series clear of the
+// 3:1 mark floor against the page in either scheme, and 3:1 from each other.
+const C_STRONG = PALETTE[0];   // exceptions, and the first series of a pair
+const C_MAIN   = PALETTE[1];   // the only series, where a chart has one
+const C_MID    = PALETTE[2];   // ordinary bars, and the second series of a pair
+const MARK = '▼ ';        // prefixes an exception's axis label
+
 function destroyAll() {
   Object.keys(charts).forEach(function (k) { charts[k].destroy(); delete charts[k]; });
 }
@@ -303,9 +417,9 @@ function drawSurvival(d) {
       labels: labels,
       datasets: [
         { label: 'Faithful survival %', data: d.survival.map(function (s) { return pct(s.faithful_pct); }),
-          backgroundColor: PALETTE[1] },
+          backgroundColor: C_STRONG },
         { label: 'Traitor survival %', data: d.survival.map(function (s) { return pct(s.traitor_pct); }),
-          backgroundColor: PALETTE[3] }
+          backgroundColor: C_MID }
       ]
     },
     options: baseOptions({
@@ -317,10 +431,10 @@ function drawSurvival(d) {
         } } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true, max: 100, title: { display: true, text: '% surviving',
-             color: themeInk() } }
+             color: themeMuted() } }
       }
     })
   });
@@ -334,18 +448,18 @@ function drawElimination(d) {
       labels: rows.map(function (r) { return r.phase; }),
       datasets: [
         { label: 'Murdered', data: rows.map(function (r) { return r.murdered / d.games; }),
-          backgroundColor: PALETTE[3] },
+          backgroundColor: C_STRONG },
         { label: 'Banished', data: rows.map(function (r) { return r.banished / d.games; }),
-          backgroundColor: PALETTE[2] }
+          backgroundColor: C_MID }
       ]
     },
     options: baseOptions({
       scales: {
-        x: { stacked: true, ticks: { color: themeInk(), maxRotation: 60, minRotation: 45 },
+        x: { stacked: true, ticks: { color: themeMuted(), maxRotation: 60, minRotation: 45 },
              grid: { display: false } },
-        y: { stacked: true, ticks: { color: themeInk() }, grid: { color: gridColor() },
+        y: { stacked: true, ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true,
-             title: { display: true, text: 'eliminations per game', color: themeInk() } }
+             title: { display: true, text: 'eliminations per game', color: themeMuted() } }
       }
     })
   });
@@ -354,24 +468,27 @@ function drawElimination(d) {
 function drawNomination(d) {
   const rows = d.nomination_accuracy || [];
   // The 25–33% base-rate band is what makes this chart readable: a bar below
-  // it is a defective parameter mapping, not a finding about the game.
+  // it is a defective parameter mapping, not a finding about the game. That
+  // exception is marked on the axis label as well as by tint, so it survives
+  // grayscale (§7.9).
+  const under = function (r) { return r.pct !== null && r.pct < 25; };
   charts.nomination = new Chart(document.getElementById('c-nomination'), {
     type: 'bar',
     data: {
-      labels: rows.map(function (r) { return r.id; }),
+      labels: rows.map(function (r) { return (under(r) ? MARK : '') + r.id; }),
       datasets: [
         { label: 'Nomination accuracy %',
           data: rows.map(function (r) { return pct(r.pct); }),
           backgroundColor: rows.map(function (r) {
-            return (r.pct !== null && r.pct < 25) ? PALETTE[3] : PALETTE[2];
+            return under(r) ? C_STRONG : C_MID;
           }), order: 2 },
         { label: 'Base rate (25%)', type: 'line',
           data: rows.map(function () { return 25; }),
-          borderColor: PALETTE[4], borderDash: [5, 4], borderWidth: 2,
+          borderColor: themeMuted(), borderDash: [5, 4], borderWidth: 1,
           pointRadius: 0, fill: false, order: 1 },
         { label: 'Base rate (33%)', type: 'line',
           data: rows.map(function () { return 33; }),
-          borderColor: PALETTE[4], borderDash: [2, 3], borderWidth: 2,
+          borderColor: themeMuted(), borderDash: [2, 3], borderWidth: 1,
           pointRadius: 0, fill: false, order: 1 }
       ]
     },
@@ -390,10 +507,10 @@ function drawNomination(d) {
         } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true, suggestedMax: 60,
-             title: { display: true, text: '% naming a Traitor', color: themeInk() } }
+             title: { display: true, text: '% naming a Traitor', color: themeMuted() } }
       }
     })
   });
@@ -404,12 +521,16 @@ function drawLadder(d) {
   charts.ladder = new Chart(document.getElementById('c-ladder'), {
     type: 'bar',
     data: {
-      labels: rows.map(function (r) { return r.tag.replace('TIE_LADDER_', ''); }),
+      // The forced-random step is the one worth spotting, so it is marked on
+      // the axis as well as drawn at the dark end of the ramp.
+      labels: rows.map(function (r) {
+        const name = r.tag.replace('TIE_LADDER_', '');
+        return (r.tag === 'SMALL_COUNT_TIE_FORCED' ? MARK : '') + name;
+      }),
       datasets: [{ label: 'Ties resolved',
                    data: rows.map(function (r) { return r.count; }),
                    backgroundColor: rows.map(function (r) {
-                     // The forced-random step is the one worth spotting.
-                     return r.tag === 'SMALL_COUNT_TIE_FORCED' ? PALETTE[3] : PALETTE[0];
+                     return r.tag === 'SMALL_COUNT_TIE_FORCED' ? C_STRONG : C_MID;
                    }) }]
     },
     options: baseOptions({
@@ -421,8 +542,8 @@ function drawLadder(d) {
         } } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true }
       }
     })
@@ -437,7 +558,7 @@ function drawPlate(d) {
       labels: rows.map(function (r) { return r.id; }),
       datasets: [{ label: 'Detections per game',
                    data: rows.map(function (r) { return Math.round(r.per_game * 1000) / 1000; }),
-                   backgroundColor: PALETTE[5] }]
+                   backgroundColor: C_MAIN }]
     },
     options: baseOptions({
       plugins: {
@@ -448,8 +569,8 @@ function drawPlate(d) {
         } } }
       },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { display: false } },
-        y: { ticks: { color: themeInk() }, grid: { color: gridColor() }, beginAtZero: true }
+        x: { ticks: { color: themeMuted() }, grid: { display: false } },
+        y: { ticks: { color: themeMuted() }, grid: { color: gridColor() }, beginAtZero: true }
       }
     })
   });
@@ -457,21 +578,24 @@ function drawPlate(d) {
 
 function drawFloats(d) {
   const rows = d.float_events || [];
+  // Nominal categories, so they are separated by position and direct labels
+  // rather than by tint steps — a mono ramp here would imply a ranking the
+  // data does not have (§3 caveat).
   charts.floats = new Chart(document.getElementById('c-floats'), {
     type: 'bar',
     data: {
       labels: rows.map(function (r) { return r.tag; }),
       datasets: [{ label: '% of games',
                    data: rows.map(function (r) { return pct(r.pct); }),
-                   backgroundColor: PALETTE.slice(0, rows.length) }]
+                   backgroundColor: C_MAIN }]
     },
     options: baseOptions({
       indexAxis: 'y',
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: themeInk() }, grid: { color: gridColor() },
+        x: { ticks: { color: themeMuted() }, grid: { color: gridColor() },
              beginAtZero: true, max: 100 },
-        y: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { display: false } }
+        y: { ticks: { color: themeMuted(), font: { size: 11 } }, grid: { display: false } }
       }
     })
   });

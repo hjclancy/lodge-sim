@@ -19,6 +19,19 @@ The fetch means charts.html and trace.html need to be served over HTTP.
 That is what GitHub Pages does. Opening them from a file:// path shows a
 message saying to run `python3 -m http.server` in reports/ instead of
 failing silently — browsers block file:// fetches as a cross-origin read.
+
+Styling comes from report_common.CSS — HOUSE STYLE v3 — plus the nav, chart
+and control rules below. Two of that system's laws bind hardest here:
+
+  * Colour is information (§7.1-2). Cobalt marks exactly one thing per view —
+    the active nav tab, the changed slider, the link — and nothing is coloured
+    to look nice. Vermilion appears in one place on the whole site, the
+    Traitor edge in the trace, which is what "<1%, never without Cobalt" means
+    in practice.
+  * Every chart is one family of tints (§3). SERIES_COLORS is Mode A, the
+    Cobalt ramp, and no chart mixes it with anything. Where the data is
+    nominal rather than ordered, series are told apart by position, direct
+    label, dash and point shape — never by tint step alone.
 """
 
 import html
@@ -54,85 +67,110 @@ NAV = [
 SHARED_CSS = """
 .wrap { max-width: 1180px; }
 .prose, .summary, .disclaimer, footer.page { max-width: 80ch; }
-a { color: var(--accent); }
 nav.site {
-  background: var(--panel); border-bottom: 1px solid var(--line);
-  margin-bottom: 2rem; position: sticky; top: 0; z-index: 5;
+  background: var(--surface); border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--s32); position: sticky; top: 0; z-index: 5;
 }
-nav.site .wrap { display: flex; gap: 0.3rem; flex-wrap: wrap; padding-top: 0.4rem; padding-bottom: 0.4rem; }
+nav.site .wrap { display: flex; gap: var(--s4); flex-wrap: wrap;
+                 padding-top: var(--s8); padding-bottom: var(--s8); }
 nav.site a {
-  padding: 0.35rem 0.85rem; border-radius: 6px; text-decoration: none;
-  color: var(--ink-soft); font-size: 0.92rem; font-weight: 600;
+  padding: var(--s8) var(--s12); border-radius: var(--radius); text-decoration: none;
+  color: var(--text-muted); font-size: var(--t-small); font-weight: 500;
 }
-nav.site a:hover { background: var(--paper); color: var(--accent); }
-nav.site a[aria-current="page"] { background: var(--accent); color: #fbf3e6; }
+nav.site a:hover { background: var(--surface-2); color: var(--accent); }
+/* The active tab is the nav's Cobalt moment; the aria-current attribute
+   carries the same fact for anyone not reading colour. */
+nav.site a[aria-current="page"] {
+  background: var(--cobalt); color: var(--paper); font-weight: 500;
+}
 header.page { margin-bottom: 0; }
-.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 1rem; }
-.scroll table { margin: 0; font-size: 0.88rem; }
-.scroll th, .scroll td { padding: 0.42rem 0.6rem; }
-.scroll + p.note { margin-top: 0.3rem; }
-td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-.kind { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 999px;
-        font-size: 0.78rem; font-weight: 600; border: 1px solid var(--line); }
-.kind.structural { background: #e6edf5; color: #2f4a6b; }
-.kind.reasoning  { background: #f0e8f5; color: #573b6b; }
-.kind.other      { background: #ece9e2; color: var(--ink-soft); }
-.controls { margin: 1.2rem 0 0.8rem 0; display: flex; gap: 0.5rem;
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: var(--s16); }
+.scroll table { margin: 0; font-size: var(--t-caption); }
+.scroll th, .scroll td { padding: var(--s8) var(--s12); }
+.scroll + p.note { margin-top: var(--s4); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums;
+                 font-family: var(--mono); }
+th.num { font-family: var(--sans); }
+/* Report kind is a nominal category, so it is carried by the label, not by a
+   hue per kind (§7.3, §7.9). */
+.kind {
+  display: inline-block; padding: 0 var(--s8); border-radius: var(--radius);
+  font-family: var(--mono); font-size: var(--t-micro); line-height: 1.6;
+  font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid var(--rule); background: var(--surface-2); color: var(--text-muted);
+}
+.controls { margin: var(--s24) 0 var(--s12) 0; display: flex; gap: var(--s8);
             flex-wrap: wrap; align-items: center; }
-.controls .label { font-size: 0.85rem; color: var(--ink-soft); }
+.controls .label { font-size: var(--t-small); color: var(--text-muted); font-weight: 500; }
 button.btn, select.ctl, input.ctl {
-  font: inherit; font-size: 0.88rem; padding: 0.3rem 0.8rem;
-  border-radius: 6px; border: 1px solid var(--line);
-  background: var(--panel); color: var(--ink);
+  font-family: var(--sans); font-size: var(--t-small); padding: var(--s8) var(--s12);
+  border-radius: var(--radius); border: 1px solid var(--rule-strong);
+  background: var(--surface); color: var(--text);
 }
-button.btn { cursor: pointer; font-weight: 600; }
+select.ctl:focus-visible, input.ctl:focus-visible, button.btn:focus-visible {
+  outline: 2px solid var(--cobalt); outline-offset: 1px;
+}
+button.btn { cursor: pointer; font-weight: 500; }
 button.btn:hover { border-color: var(--accent); color: var(--accent); }
-button.btn.primary { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
-button.btn.primary:hover { color: #fff; opacity: 0.92; }
-button.btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fbf3e6; }
+button.btn.primary { background: var(--cobalt); border-color: var(--cobalt); color: var(--paper); }
+button.btn.primary:hover { background: var(--cobalt-press); border-color: var(--cobalt-press);
+                           color: var(--paper); }
+button.btn[aria-pressed="true"] { background: var(--cobalt); border-color: var(--cobalt);
+                                  color: var(--paper); }
 .chartbox {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-  padding: 1rem 1.1rem 0.8rem 1.1rem; margin: 0.6rem 0 1.6rem 0;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg);
+  padding: var(--s16) var(--s16) var(--s12) var(--s16); margin: var(--s8) 0 var(--s24) 0;
 }
-.chartbox h3 { margin: 0 0 0.2rem 0; color: var(--accent); font-size: 1rem; }
-.chartbox .cap { color: var(--ink-soft); font-size: 0.85rem; margin: 0 0 0.7rem 0; max-width: 78ch; }
+.chartbox h3 { margin: 0 0 var(--s4) 0; color: var(--text);
+               font-size: var(--t-h4); line-height: 1.3; font-weight: 500; }
+.chartbox .cap { color: var(--text-muted); font-size: var(--t-small); line-height: 1.45;
+                 margin: 0 0 var(--s12) 0; max-width: 78ch; }
 .chartwrap { position: relative; height: 340px; }
 .banner {
-  border-radius: 6px; padding: 0.8rem 1.1rem; margin: 1rem 0;
-  border-left: 5px solid var(--disclaimer-border); background: var(--disclaimer-bg);
-  font-size: 0.95rem;
+  border-radius: 0 var(--radius) var(--radius) 0; padding: var(--s12) var(--s16);
+  margin: var(--s16) 0;
+  border-left: 4px solid var(--warning); background: var(--surface-2);
+  font-size: var(--t-small);
 }
 .banner.hidden { display: none; }
-.empty { color: var(--ink-soft); font-style: italic; }
-code { font-size: 0.9em; background: rgba(127,127,127,0.13); padding: 0.05rem 0.3rem; border-radius: 3px; }
+.empty { color: var(--text-muted); font-style: italic; }
 pre.code {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
-  padding: 0.8rem 1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.45;
-}
-@media (prefers-color-scheme: dark) {
-  .kind.structural { background: #24313f; color: #a8c6e6; }
-  .kind.reasoning  { background: #332a3d; color: #d0b3e6; }
-  .kind.other      { background: #322d25; color: var(--ink-soft); }
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius);
+  padding: var(--s12) var(--s16); overflow-x: auto;
+  font-family: var(--mono); font-size: var(--t-caption); line-height: 1.45;
 }
 """
 
-# Palette for chart series. Pulled from the report shell's accents so the
-# charts read as part of the same document, and checked to stay legible on
-# both the light and dark page backgrounds.
-SERIES_COLORS = ["#6b3f2a", "#3f6b3f", "#2f4a6b", "#a13b3b",
-                 "#8a6b1f", "#573b6b", "#1f6b6b", "#9c6b4c"]
+# Chart series colour — HOUSE STYLE §3 Mode A, the Cobalt tint ramp, dark to
+# light. Every chart on the site is one family: no chart mixes Cobalt and
+# Vermilion, and there are no foreign hues. Five steps is the legible ceiling
+# the spec sets, so anything needing more than five series distinguishes them
+# by dash pattern and point shape as well (§7.9 — never colour alone).
+SERIES_COLORS = ["#062A99", "#0A45F5", "#4773F7", "#84A2FA", "#C2D0FC"]
 
-# Chart.js defaults + the two helpers every chart page uses: a theme-aware
-# grid/tick colour, and the "did Chart.js actually load" guard.
+# Chart.js defaults + the helpers every chart page uses: theme-aware ink and
+# grid colours read from the live tokens, dash/point patterns for multi-series
+# charts, and the "did Chart.js actually load" guard.
 CHART_BOOT = """
-const PALETTE = %s;
-function themeInk() {
-  return getComputedStyle(document.body).getPropertyValue('color') || '#2a2622';
+// The Mode A ramp, ordered by EMPHASIS rather than by lightness: PALETTE[0] is
+// always the step that carries hardest against the page. On Paper that is the
+// dark end; on an Ink ground the ramp reverses, because #062A99 on #191C22 is
+// under the 3:1 mark floor while #C2D0FC is the one that reads. Same family,
+// same five steps — §3 is about the family, not the direction.
+const RAMP_A = %s;
+const PALETTE = window.matchMedia('(prefers-color-scheme: dark)').matches
+  ? RAMP_A.slice().reverse() : RAMP_A;
+// Series beyond the fifth reuse a tint but change dash and point shape, so no
+// two series on one chart are told apart by colour alone.
+const DASHES = [[], [6, 4], [2, 3]];
+const POINTS = ['circle', 'rect', 'triangle'];
+function token(name, fallback) {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
 }
-function gridColor() {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)';
-}
+function themeInk() { return token('--text', '#101215'); }
+function themeMuted() { return token('--text-muted', '#5A606D'); }
+function gridColor() { return token('--rule', '#E3E5EA'); }
 function chartsAvailable(bannerId) {
   if (typeof Chart !== 'undefined') return true;
   const b = document.getElementById(bannerId);
@@ -150,13 +188,17 @@ function baseOptions(extra) {
     responsive: true, maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
     plugins: {
-      legend: { labels: { color: themeInk(), boxWidth: 12, font: { size: 12 } } },
-      tooltip: { padding: 10 }
+      legend: { labels: { color: themeInk(), boxWidth: 12, boxHeight: 12,
+                          font: { family: 'Roboto, system-ui, Arial, sans-serif', size: 12 } } },
+      tooltip: { padding: 10, backgroundColor: '#101215', cornerRadius: 4,
+                 titleFont: { family: 'Roboto, system-ui, Arial, sans-serif', weight: '500' },
+                 bodyFont: { family: 'Roboto Mono, ui-monospace, Menlo, monospace' } }
     },
     scales: {
-      x: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { color: gridColor() } },
-      y: { ticks: { color: themeInk(), font: { size: 11 } }, grid: { color: gridColor() },
-           beginAtZero: true }
+      x: { ticks: { color: themeMuted(), font: { size: 11 } }, grid: { color: gridColor() },
+           border: { color: gridColor() } },
+      y: { ticks: { color: themeMuted(), font: { size: 11 } }, grid: { color: gridColor() },
+           border: { color: gridColor() }, beginAtZero: true }
     }
   };
   return Object.assign(o, extra || {});

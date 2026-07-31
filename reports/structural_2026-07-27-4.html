@@ -7,141 +7,215 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%93%8A%3C/text%3E%3C/svg%3E">
 <style>
 :root {
-  --ink: #2a2622;
-  --ink-soft: #5a5349;
-  --paper: #faf7f0;
-  --panel: #ffffff;
-  --line: #e2dccd;
-  --accent: #6b3f2a;
-  --accent-soft: #9c6b4c;
-  --disclaimer-bg: #fff3d6;
-  --disclaimer-border: #c9962f;
-  --good: #3f6b3f;
-  --bad: #a13b3b;
+  /* ---- HOUSE STYLE v3 tokens (§8), verbatim ---- */
+  --ink: #101215; --n800: #2C313A; --n600: #5A606D; --n500: #7C828E;
+  --n300: #C4C8D0; --n200: #E3E5EA; --n100: #F1F2F5; --n050: #F8F9FB;
+  --paper: #FFFFFF;
+  --cobalt: #0A45F5; --cobalt-press: #0836C2; --cobalt-tint: #C2D0FC;
+  --vermilion: #F01818;
+  --success: #10A257; --warning: #F5A623; --danger: #E5352B; --info: #0A45F5;
+  /* chart Mode A — Cobalt tints (dark->light) */
+  --cA1: #062A99; --cA2: #0A45F5; --cA3: #4773F7; --cA4: #84A2FA; --cA5: #C2D0FC;
+  /* chart Mode B — Vermilion tints (dark->light) */
+  --cB1: #900E0E; --cB2: #F01818; --cB3: #F55C5C; --cB4: #F98F8F; --cB5: #FDBFBF;
+  --o100: 1; --o72: .72; --o48: .48; --o24: .24; --o12: .12; --o06: .06;
+  --radius: 4px; --radius-lg: 8px;
+  --sans: 'Roboto', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+  --mono: 'Roboto Mono', ui-monospace, Menlo, monospace;
+
+  /* ---- 8pt spacing (§6) ---- */
+  --s4: 4px; --s8: 8px; --s12: 12px; --s16: 16px; --s24: 24px;
+  --s32: 32px; --s48: 48px; --s64: 64px; --s96: 96px;
+
+  /* ---- type scale (§5), 1.25 major third on a 16px base ---- */
+  --t-display: 49px; --t-h1: 39px; --t-h2: 31px; --t-h3: 25px; --t-h4: 20px;
+  --t-body: 16px; --t-small: 14px; --t-caption: 13px; --t-micro: 11px;
+
+  /* ---- roles: light ---- */
+  --bg: var(--n050);
+  --surface: var(--paper);
+  --surface-2: var(--n100);
+  --zebra: var(--n050);
+  --text: var(--ink);
+  --text-muted: var(--n600);
+  --rule: var(--n200);
+  --rule-strong: var(--n300);
+  --accent: var(--cobalt);
+  --accent-press: var(--cobalt-press);
+  --accent-tint: var(--cobalt-tint);
+  --on-accent: var(--paper);
+  --mark: var(--cobalt-tint);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Derived, not specified: the two lifted surfaces are Ink stepped toward
+       N-800 so panels separate from the ground without a shadow. */
+    --bg: var(--ink);
+    --surface: #191C22;
+    --surface-2: var(--n800);
+    --zebra: #15181D;
+    --text: var(--n100);
+    --text-muted: var(--n300);
+    --rule: #343A44;
+    --rule-strong: #464D59;
+    --accent: var(--cA4);
+    --accent-press: var(--cA5);
+    --accent-tint: #1C2B58;
+    --on-accent: var(--ink);
+    --mark: #22346B;
+  }
 }
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  padding: 0 0 4rem 0;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: -apple-system, "Segoe UI", Georgia, "Iowan Old Style", serif;
-  line-height: 1.55;
+  padding: 0 0 var(--s64) 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 .wrap {
   max-width: 920px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 var(--s24);
 }
+/* Flat by default (§6): the banner is neutral, and the single Cobalt rule at
+   the top is the view's one Cobalt moment. */
 header.page {
-  background: var(--accent);
-  color: #fbf3e6;
-  padding: 2.2rem 0 1.6rem 0;
-  margin-bottom: 2rem;
+  background: var(--surface);
+  border-top: 3px solid var(--cobalt);
+  border-bottom: 1px solid var(--rule);
+  color: var(--text);
+  padding: var(--s48) 0 var(--s32) 0;
+  margin-bottom: var(--s48);
 }
 header.page .wrap h1 {
-  margin: 0 0 0.3rem 0;
-  font-size: 1.7rem;
-  font-weight: 600;
+  margin: 0 0 var(--s8) 0;
+  font-size: var(--t-h1);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 header.page .wrap .meta {
-  color: #ecd9bd;
-  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-size: var(--t-small);
+  line-height: 1.45;
 }
 h2 {
-  font-size: 1.25rem;
-  border-bottom: 2px solid var(--line);
-  padding-bottom: 0.35rem;
-  margin-top: 2.4rem;
+  font-size: var(--t-h2);
+  line-height: 1.15;
+  font-weight: 500;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: var(--s8);
+  margin-top: var(--s48);
+  margin-bottom: var(--s16);
 }
 h3 {
-  font-size: 1.05rem;
-  color: var(--accent);
-  margin-top: 1.6rem;
+  font-size: var(--t-h3);
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--text);
+  margin-top: var(--s32);
+  margin-bottom: var(--s8);
 }
+h4 { font-size: var(--t-h4); line-height: 1.3; font-weight: 500; }
 p { max-width: 72ch; }
+a { color: var(--accent); text-underline-offset: 2px; }
+a:hover { color: var(--accent-press); }
 .summary {
-  font-size: 1.08rem;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 1.1rem 1.3rem;
+  font-size: var(--t-body);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--cobalt);
+  border-radius: var(--radius);
+  padding: var(--s16) var(--s24);
 }
+/* Warning is functional state, so it carries the rule; the fill stays neutral
+   to keep the view's colour coverage where §2 wants it. */
 .disclaimer {
-  background: var(--disclaimer-bg);
-  border-left: 5px solid var(--disclaimer-border);
-  border-radius: 4px;
-  padding: 1rem 1.3rem;
-  margin: 1.4rem 0;
-  font-size: 0.98rem;
+  background: var(--surface-2);
+  border-left: 4px solid var(--warning);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: var(--s16) var(--s24);
+  margin: var(--s24) 0;
+  font-size: var(--t-small);
 }
-.disclaimer strong { color: #6b4c00; }
+.disclaimer strong { color: var(--text); font-weight: 500; }
 table {
   border-collapse: collapse;
   width: 100%;
-  margin: 0.8rem 0 1.6rem 0;
-  background: var(--panel);
-  font-size: 0.95rem;
+  margin: var(--s12) 0 var(--s24) 0;
+  background: var(--surface);
+  font-size: var(--t-small);
+  border-radius: 0;
 }
 caption {
   caption-side: top;
   text-align: left;
-  font-weight: 600;
-  color: var(--accent);
-  padding-bottom: 0.3rem;
+  font-weight: 500;
+  color: var(--text);
+  padding-bottom: var(--s8);
 }
 th, td {
-  border: 1px solid var(--line);
-  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--rule);
+  padding: var(--s8) var(--s12);
   text-align: right;
 }
+/* Mono for data (§5); the label column stays sans. */
+td:not(:first-child) { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 th:first-child, td:first-child { text-align: left; }
 thead th {
-  background: #f1e9d8;
-  color: var(--ink);
-  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 500;
 }
-tbody tr:nth-child(even) { background: #fbf8f1; }
+tbody tr:nth-child(even) { background: var(--zebra); }
 .note {
-  color: var(--ink-soft);
-  font-size: 0.88rem;
-  margin: -0.9rem 0 1.6rem 0;
+  color: var(--text-muted);
+  font-size: var(--t-caption);
+  line-height: 1.4;
+  margin: calc(-1 * var(--s12)) 0 var(--s24) 0;
 }
+/* Never colour alone (§7.9): the dot is a second cue and the pill's own text
+   states the state, so the label reads in grayscale. */
 .pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s8);
+  padding: var(--s4) var(--s8);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--t-caption);
+  font-weight: 500;
+}
+.pill::before {
+  content: "";
   display: inline-block;
-  padding: 0.1rem 0.55rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 600;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--n500);
 }
-.pill.ok { background: #e2ecdd; color: var(--good); }
-.pill.bad { background: #f4dede; color: var(--bad); }
+.pill.ok::before { background: var(--success); }
+.pill.bad::before { background: var(--danger); }
+code {
+  font-family: var(--mono);
+  font-size: 0.875em;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  padding: 0 var(--s4);
+  border-radius: var(--radius);
+}
 footer.page {
-  margin-top: 3rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--line);
-  color: var(--ink-soft);
-  font-size: 0.85rem;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #ece6d9;
-    --ink-soft: #b8b0a0;
-    --paper: #201d18;
-    --panel: #2a2620;
-    --line: #453f34;
-    --accent: #d99b6c;
-    --accent-soft: #c98a58;
-    --disclaimer-bg: #3a2f14;
-    --disclaimer-border: #d9a53a;
-    --good: #8fbf8f;
-    --bad: #e08a8a;
-  }
-  header.page { background: #3a2416; color: #f3e6d4; }
-  header.page .wrap .meta { color: #d9c2a0; }
-  thead th { background: #362f22; }
-  tbody tr:nth-child(even) { background: #262219; }
-  .disclaimer strong { color: #f0c874; }
+  margin-top: var(--s48);
+  padding-top: var(--s16);
+  border-top: 1px solid var(--rule);
+  color: var(--text-muted);
+  font-size: var(--t-caption);
 }
 </style>
 </head>

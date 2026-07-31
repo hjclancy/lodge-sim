@@ -96,6 +96,9 @@ jobs:
           set -o pipefail
           python3 scripts/run_structural_ci.py --games "${{ steps.cfg.outputs.games }}" 2>&1 | tee run.log
 
+      - name: Restyle existing reports to the current shell CSS
+        run: python3 scripts/restyle_reports.py
+
       - name: Rebuild dashboard
         run: python3 scripts/make_index.py
 
